@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "server/pdfMapper.ts",
+    "server/pdfValidation.ts",
+    "shared/schema.ts",
+    "script/verify-pdf-readiness.ts"
+  ],
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".codex-pdf-check",
+    "rootDir": ".",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "target": "ES2022",
+    "incremental": false,
+    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo.pdf-check"
+  }
+}
