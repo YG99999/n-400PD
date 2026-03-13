@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 import type { N400FormData, Section } from "@shared/schema";
 import { SECTION_LABELS, SECTIONS } from "@shared/schema";
 
@@ -15,6 +16,7 @@ interface ChatInlineEditorProps {
   formSessionId: string;
   formData: N400FormData;
   onUpdated: () => Promise<void>;
+  embedded?: boolean;
 }
 
 interface CollectedField {
@@ -150,6 +152,7 @@ export function ChatInlineEditor({
   formSessionId,
   formData,
   onUpdated,
+  embedded = false,
 }: ChatInlineEditorProps) {
   const fields = useMemo(() => flattenCollectedFields(formData), [formData]);
 
@@ -178,42 +181,59 @@ export function ChatInlineEditor({
     return null;
   }
 
+  const header = (
+    <div className="flex flex-row items-center justify-between gap-3">
+      <div>
+        <CardTitle className={cn("text-lg", embedded && "text-base")}>Edit Info</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Update collected answers here. New answers from chat appear automatically.
+        </p>
+      </div>
+      {mutation.isPending ? <Badge>Saving</Badge> : <Badge variant="secondary">Live</Badge>}
+    </div>
+  );
+
+  const fieldsContent = (
+    <div className="space-y-5">
+      {groupedFields.map(([section, sectionFields]) => (
+        <section key={section} className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold">{SECTION_LABELS[section]}</h3>
+            <Badge variant="outline">{sectionFields.length} field{sectionFields.length === 1 ? "" : "s"}</Badge>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {sectionFields.map((field) => (
+              <InlineEditorField
+                key={field.path}
+                field={field}
+                onSave={(path, value) => mutation.mutate({ path, value })}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+      {mutation.isError ? (
+        <div className="flex items-center justify-between rounded-2xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <span>We could not save that change. Please try again.</span>
+          <Button variant="ghost" size="sm" onClick={() => mutation.reset()}>Dismiss</Button>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className="space-y-4 p-4">
+        {header}
+        {fieldsContent}
+      </div>
+    );
+  }
+
   return (
     <Card className="border-border/70 bg-card/95 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between gap-3">
-        <div>
-          <CardTitle className="text-lg">Edit Info</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Update any collected answer here. Changes stay in sync with the chat.
-          </p>
-        </div>
-        {mutation.isPending ? <Badge>Saving</Badge> : <Badge variant="secondary">Live</Badge>}
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {groupedFields.map(([section, sectionFields]) => (
-          <section key={section} className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold">{SECTION_LABELS[section]}</h3>
-              <Badge variant="outline">{sectionFields.length} field{sectionFields.length === 1 ? "" : "s"}</Badge>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {sectionFields.map((field) => (
-                <InlineEditorField
-                  key={field.path}
-                  field={field}
-                  onSave={(path, value) => mutation.mutate({ path, value })}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-        {mutation.isError ? (
-          <div className="flex items-center justify-between rounded-2xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            <span>We could not save that change. Please try again.</span>
-            <Button variant="ghost" size="sm" onClick={() => mutation.reset()}>Dismiss</Button>
-          </div>
-        ) : null}
-      </CardContent>
+      <CardHeader>{header}</CardHeader>
+      <CardContent>{fieldsContent}</CardContent>
     </Card>
   );
 }

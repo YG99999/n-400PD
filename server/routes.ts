@@ -50,7 +50,9 @@ import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
 import { summarizeScope } from "./assistantCatalog";
 import {
+  buildElevenLabsAgentPrompt,
   buildElevenLabsDynamicVariables,
+  buildElevenLabsFirstMessage,
   createElevenLabsConversationToken,
   createElevenLabsSignedUrl,
   mapTranscriptMessage,
@@ -592,6 +594,8 @@ export async function registerRoutes(
         ? await createElevenLabsConversationToken()
         : undefined;
       const dynamicVariables = buildElevenLabsDynamicVariables(refreshedSession, requestUser);
+      const promptOverride = buildElevenLabsAgentPrompt(refreshedSession, requestUser);
+      const firstMessage = buildElevenLabsFirstMessage(refreshedSession);
 
       console.info("ElevenLabs session bootstrap created", {
         correlationId,
@@ -617,6 +621,8 @@ export async function registerRoutes(
         supportedScopeSummary: JSON.stringify(summarizeScope(refreshedSession.formData)),
         existingTranscript: refreshedSession.messages.map(mapTranscriptMessage),
         dynamicVariables,
+        promptOverride,
+        firstMessage,
         preferredMode: body.mode ?? "voice",
         debug: config.elevenLabsDebugBootstrap ? {
           transport: "websocket",
@@ -625,6 +631,7 @@ export async function registerRoutes(
           signedUrlPresent: Boolean(signedUrl),
           conversationTokenPresent: Boolean(conversationToken),
           dynamicVariableKeys: Object.keys(dynamicVariables),
+          firstMessagePresent: Boolean(firstMessage),
         } : undefined,
       });
     } catch (err: any) {

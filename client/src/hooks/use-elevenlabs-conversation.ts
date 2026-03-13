@@ -25,6 +25,8 @@ interface BootstrapResponse {
   supportedScopeSummary: string;
   existingTranscript: ChatMessage[];
   dynamicVariables: Record<string, string | number | boolean>;
+  promptOverride: string;
+  firstMessage: string;
   preferredMode: ConversationMode;
   debug?: ElevenLabsSessionDebug;
 }
@@ -165,12 +167,32 @@ function normalizeError(
 }
 
 function buildSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMode) {
+  const prefersWebRtc = mode === "voice" && Boolean(bootstrap.conversationToken);
+
   return {
-    signedUrl: bootstrap.signedUrl,
-    connectionType: "websocket" as const,
+    ...(prefersWebRtc
+      ? {
+          conversationToken: bootstrap.conversationToken!,
+          connectionType: "webrtc" as const,
+        }
+      : {
+          signedUrl: bootstrap.signedUrl,
+          connectionType: "websocket" as const,
+        }),
     textOnly: mode === "text",
     userId: bootstrap.formSessionId,
     dynamicVariables: bootstrap.dynamicVariables,
+    overrides: {
+      agent: {
+        prompt: {
+          prompt: bootstrap.promptOverride,
+        },
+        firstMessage: bootstrap.firstMessage,
+      },
+      conversation: {
+        textOnly: mode === "text",
+      },
+    },
     workletPaths: mode === "voice" ? WORKLET_PATHS : undefined,
   };
 }
@@ -530,6 +552,16 @@ export function useElevenLabsConversation({
           }
           return connectModeRef.current === "voice" ? "starting_voice" : "starting_text";
         });
+        return;
+      }
+
+      if (status === "connected") {
+        setAgentStatus(connectModeRef.current === "voice" ? "listening" : "ready");
+        return;
+      }
+
+      if (status === "disconnecting") {
+        setAgentStatus("idle");
       }
     },
     onInterruption: () => {

@@ -29,8 +29,24 @@ function buildCurrentStateSummary(session: FormSession) {
   ].join(" ");
 }
 
+function buildRecentTranscriptSummary(session: FormSession) {
+  const recentTurns = session.messages
+    .filter((message) => message.role === "assistant" || message.role === "user")
+    .slice(-6)
+    .map((message) => `${message.role === "assistant" ? "Guide" : "User"}: ${message.content}`)
+    .join("\n");
+
+  return recentTurns || "No recent transcript is available yet.";
+}
+
 export function buildElevenLabsAgentPrompt(session: FormSession, user?: StoredUser) {
   const userName = user?.fullName?.trim() || "the applicant";
+  const currentPrompt = session.workflowState.chatSession?.currentPrompt
+    ?? session.workflowState.chatSession?.lastMeaningfulAssistantMessage
+    ?? [...session.messages].reverse().find((message) => message.role === "assistant")?.content
+    ?? getInitialMessage(session.currentSection);
+  const awaitingUserResponse = session.workflowState.chatSession?.awaitingUserResponse ?? true;
+
   return [
     "You are CitizenFlow's calm, voice-first N-400 intake guide.",
     "Speak in plain language. Ask exactly one focused question at a time.",
@@ -44,8 +60,14 @@ export function buildElevenLabsAgentPrompt(session: FormSession, user?: StoredUs
     "Lead the conversation by asking the next concrete question. Do not start with a generic welcome unless recovery truly requires it.",
     "Do not move to review until transition_to_review succeeds.",
     "When review is ready, explain that clearly and then use navigate_to_review.",
+    "Treat this as one ongoing conversation, even when the user reconnects or switches modes.",
+    "If there is an active current prompt below, continue from that question instead of restarting the interview.",
     `You are currently helping ${userName}.`,
     buildCurrentStateSummary(session),
+    `Awaiting user response: ${awaitingUserResponse ? "yes" : "no"}.`,
+    `Current active question: ${currentPrompt}`,
+    "Recent transcript context:",
+    buildRecentTranscriptSummary(session),
     `Section guidance: ${getSectionPrompt(session.currentSection)}.`,
     "Field catalog:",
     buildFieldCatalogPrompt(),
@@ -73,6 +95,12 @@ export function buildElevenLabsFirstMessage(session: FormSession) {
 }
 
 export function buildElevenLabsDynamicVariables(session: FormSession, user?: StoredUser) {
+  const currentPrompt = session.workflowState.chatSession?.currentPrompt
+    ?? session.workflowState.chatSession?.lastMeaningfulAssistantMessage
+    ?? [...session.messages].reverse().find((message) => message.role === "assistant")?.content
+    ?? getInitialMessage(session.currentSection);
+  const recentUserReply = [...session.messages].reverse().find((message) => message.role === "user")?.content ?? "";
+
   return {
     user_first_name: user?.fullName?.split(" ")[0] || "there",
     form_session_id: session.id,
@@ -81,6 +109,9 @@ export function buildElevenLabsDynamicVariables(session: FormSession, user?: Sto
     ready_for_review: session.workflowState.readyForReview,
     missing_fields_summary: formatMissingFields(session),
     supported_scope_summary: JSON.stringify(summarizeScope(session.formData)),
+    current_prompt: currentPrompt,
+    awaiting_user_response: session.workflowState.chatSession?.awaitingUserResponse ? "true" : "false",
+    last_user_reply: recentUserReply,
     review_context:
       session.workflowState.mode === "review" || session.workflowState.mode === "post_payment_review" ? "true" : "false",
   };

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -26,6 +27,7 @@ import { SECTIONS, SECTION_LABELS } from "@shared/schema";
 import {
   ArrowDown,
   ArrowRight,
+  ChevronDown,
   Keyboard,
   Loader2,
   LogOut,
@@ -120,6 +122,33 @@ function getStatusIcon(uiState: string, agentStatus: AgentStatus, preferredMode:
   return <MessageSquare className="h-3.5 w-3.5" />;
 }
 
+function StatusMotion({ uiState, agentStatus, preferredMode }: {
+  uiState: string;
+  agentStatus: AgentStatus;
+  preferredMode: "voice" | "text";
+}) {
+  const isConnecting = uiState === "starting_voice"
+    || uiState === "starting_text"
+    || uiState === "switching_voice"
+    || uiState === "switching_text"
+    || uiState === "error_recoverable";
+  const isThinking = agentStatus === "thinking";
+  const isListening = preferredMode === "voice" && agentStatus === "listening";
+  const isSpeaking = preferredMode === "voice" && agentStatus === "speaking";
+
+  if (!isConnecting && !isThinking && !isListening && !isSpeaking) {
+    return <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" aria-hidden="true" />;
+  }
+
+  return (
+    <span className="flex items-center gap-1" aria-hidden="true">
+      <span className={`h-2 w-2 rounded-full ${isSpeaking ? "animate-pulse bg-primary" : "animate-bounce bg-primary/80"}`} />
+      <span className={`h-2 w-2 rounded-full ${isConnecting || isThinking ? "animate-bounce bg-primary/70 [animation-delay:120ms]" : "animate-pulse bg-primary/70"}`} />
+      <span className={`h-2 w-2 rounded-full ${isListening ? "animate-bounce bg-primary/60 [animation-delay:240ms]" : "animate-pulse bg-primary/60"}`} />
+    </span>
+  );
+}
+
 export default function ChatPage() {
   const { user, formSessionId, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -129,6 +158,7 @@ export default function ChatPage() {
   const transcriptRef = useRef<HTMLDivElement>(null);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [stickToBottom, setStickToBottom] = useState(true);
+  const [showInlineEditor, setShowInlineEditor] = useState(false);
 
   useEffect(() => {
     if (!user || !formSessionId) {
@@ -184,6 +214,30 @@ export default function ChatPage() {
     [conversation.transcript, messages],
   );
 
+  const collectedFieldCount = useMemo(() => {
+    if (!sessionData?.formSession?.formData) {
+      return 0;
+    }
+
+    const countScalars = (value: unknown): number => {
+      if (Array.isArray(value)) {
+        return value.reduce((total, entry) => total + countScalars(entry), 0);
+      }
+      if (value && typeof value === "object") {
+        return Object.values(value as Record<string, unknown>).reduce<number>(
+          (total, entry) => total + countScalars(entry),
+          0,
+        );
+      }
+      if (typeof value === "boolean") return 1;
+      if (typeof value === "number") return 1;
+      if (typeof value === "string" && value.trim().length > 0) return 1;
+      return 0;
+    };
+
+    return countScalars(sessionData.formSession.formData);
+  }, [sessionData?.formSession?.formData]);
+
   const missingFieldLabels = useMemo(
     () => (readiness?.missingFields ?? []).map(humanizeField),
     [readiness?.missingFields],
@@ -218,9 +272,10 @@ export default function ChatPage() {
     const element = transcriptRef.current;
     if (!element) return;
     const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    const hasOverflow = element.scrollHeight > element.clientHeight + 120;
     const atBottom = distanceFromBottom < 80;
     setStickToBottom(atBottom);
-    setShowJumpToLatest(distanceFromBottom > 180);
+    setShowJumpToLatest(hasOverflow && distanceFromBottom > 320);
   };
 
   if (!user || !formSessionId) return null;
@@ -274,14 +329,19 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4">
-        <Card className="flex h-[calc(100vh-6.5rem)] min-h-[640px] flex-col overflow-hidden border-border/70 bg-background/95 shadow-sm">
+      <main className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
+        <Card className="flex h-[calc(100vh-5.5rem)] min-h-[560px] flex-col overflow-hidden border-border/70 bg-background/95 shadow-sm">
           <div className="sticky top-0 z-20 border-b border-border/70 bg-card/95 backdrop-blur">
-            <div className="space-y-4 px-4 py-4">
+            <div className="space-y-3 px-4 py-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-1">
+                <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="gap-2">
+                      <StatusMotion
+                        uiState={conversation.uiState}
+                        agentStatus={conversation.agentStatus}
+                        preferredMode={conversation.preferredMode}
+                      />
                       {getStatusIcon(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}
                       {getStatusLabel(conversation.agentStatus, conversation.uiState, conversation.preferredMode)}
                     </Badge>
@@ -289,7 +349,7 @@ export default function ChatPage() {
                       {SECTION_LABELS[currentSection]}
                     </Badge>
                   </div>
-                  <h1 className="text-lg font-semibold">Current question</h1>
+                  <h1 className="text-base font-semibold">Current question</h1>
                   <p className="max-w-3xl text-sm text-muted-foreground">
                     {currentPrompt}
                   </p>
@@ -300,14 +360,14 @@ export default function ChatPage() {
                   ) : null}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex shrink-0 flex-wrap gap-2">
                   {(conversation.uiState === "entry" || conversation.uiState === "resume_prompt" || conversation.uiState === "stopped_resumable") ? (
                     <>
-                      <Button onClick={() => void conversation.startConversation("voice")} data-testid={conversation.uiState === "entry" ? "button-start-voice" : "button-resume-voice"}>
+                      <Button size="sm" onClick={() => void conversation.startConversation("voice")} data-testid={conversation.uiState === "entry" ? "button-start-voice" : "button-resume-voice"}>
                         <Mic className="mr-2 h-4 w-4" />
                         {conversation.uiState === "entry" ? "Talk with guide" : "Resume by voice"}
                       </Button>
-                      <Button variant="outline" onClick={() => void conversation.startConversation("text")} data-testid={conversation.uiState === "entry" ? "button-start-text" : "button-resume-text"}>
+                      <Button size="sm" variant="outline" onClick={() => void conversation.startConversation("text")} data-testid={conversation.uiState === "entry" ? "button-start-text" : "button-resume-text"}>
                         <Keyboard className="mr-2 h-4 w-4" />
                         {conversation.uiState === "entry" ? "Type instead" : "Resume by typing"}
                       </Button>
@@ -316,11 +376,11 @@ export default function ChatPage() {
 
                   {conversation.uiState === "error_recoverable" ? (
                     <>
-                      <Button onClick={() => void conversation.startConversation("voice")} data-testid="button-retry-voice">
+                      <Button size="sm" onClick={() => void conversation.startConversation("voice")} data-testid="button-retry-voice">
                         <Mic className="mr-2 h-4 w-4" />
                         Retry voice
                       </Button>
-                      <Button variant="outline" onClick={() => void conversation.startConversation("text")} data-testid="button-retry-text">
+                      <Button size="sm" variant="outline" onClick={() => void conversation.startConversation("text")} data-testid="button-retry-text">
                         <Keyboard className="mr-2 h-4 w-4" />
                         Keep typing
                       </Button>
@@ -330,12 +390,13 @@ export default function ChatPage() {
                   {conversation.uiState === "handoff_ready" ? (
                     <>
                       <Button
+                        size="sm"
                         onClick={() => void conversation.continueToTarget(chatState?.pendingHandoffTarget ?? "review")}
                         data-testid="button-continue-handoff"
                       >
                         Continue
                       </Button>
-                      <Button variant="outline" onClick={() => void conversation.stayInChat()} data-testid="button-stay-chat">
+                      <Button size="sm" variant="outline" onClick={() => void conversation.stayInChat()} data-testid="button-stay-chat">
                         Stay here
                       </Button>
                     </>
@@ -349,6 +410,7 @@ export default function ChatPage() {
                     || conversation.uiState === "switching_text") ? (
                     <>
                       <Button
+                        size="sm"
                         variant={conversation.preferredMode === "voice" ? "default" : "outline"}
                         onClick={() => void conversation.switchMode("voice")}
                         data-testid="button-mode-voice"
@@ -357,6 +419,7 @@ export default function ChatPage() {
                         Voice
                       </Button>
                       <Button
+                        size="sm"
                         variant={conversation.preferredMode === "text" ? "default" : "outline"}
                         onClick={() => void conversation.switchMode("text")}
                         data-testid="button-mode-text"
@@ -364,7 +427,7 @@ export default function ChatPage() {
                         <Keyboard className="mr-2 h-4 w-4" />
                         Typing
                       </Button>
-                      <Button variant="ghost" onClick={() => void conversation.pauseConversation()} data-testid="button-pause-chat">
+                      <Button size="sm" variant="ghost" onClick={() => void conversation.pauseConversation()} data-testid="button-pause-chat">
                         <PauseCircle className="mr-2 h-4 w-4" />
                         Pause chat
                       </Button>
@@ -379,11 +442,11 @@ export default function ChatPage() {
                   <span>{Math.round(progressPercent)}%</span>
                 </div>
                 <Progress value={progressPercent} className="h-2" />
-                <div className="flex flex-wrap gap-2">
+                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                   {SECTIONS.map((section, index) => (
                     <div
                       key={section}
-                      className={`rounded-full px-3 py-1 text-[11px] ${
+                      className={`shrink-0 rounded-full px-3 py-1 text-[11px] ${
                         index < currentSectionIndex
                           ? "bg-primary/10 text-primary"
                           : index === currentSectionIndex
@@ -410,9 +473,9 @@ export default function ChatPage() {
             <div
               ref={transcriptRef}
               onScroll={handleTranscriptScroll}
-              className="h-full overflow-y-auto px-4 py-5"
+              className="h-full overflow-y-auto px-4 py-4"
             >
-              <div className="mx-auto flex max-w-3xl flex-col gap-4 pb-6">
+              <div className="mx-auto flex max-w-3xl flex-col gap-3 pb-4">
                 {isLoadingSession ? (
                   <div className="space-y-4">
                     <Skeleton className="h-16 w-3/4" />
@@ -433,7 +496,7 @@ export default function ChatPage() {
                       data-testid={`message-${message.role}-${message.id}`}
                     >
                       <div
-                        className={`max-w-[90%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[80%] ${
+                        className={`max-w-[92%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[82%] ${
                           message.role === "user"
                             ? "rounded-br-md bg-primary text-primary-foreground"
                             : "rounded-bl-md border border-border bg-card"
@@ -455,7 +518,8 @@ export default function ChatPage() {
             {showJumpToLatest ? (
               <Button
                 size="sm"
-                className="absolute bottom-4 right-4 rounded-full shadow-lg"
+                variant="secondary"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full shadow-lg"
                 onClick={() => {
                   setStickToBottom(true);
                   scrollToBottom();
@@ -468,15 +532,20 @@ export default function ChatPage() {
             ) : null}
           </div>
 
-          <div className="border-t border-border/70 bg-card/60 px-4 py-4">
+          <div className="border-t border-border/70 bg-card/60 px-4 py-3">
             <div className="mx-auto max-w-3xl">
-              <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                <p>
+              <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                <p className="line-clamp-2">
                   {conversation.preferredMode === "voice"
                     ? "Voice is on. You can type at any time and we will keep the same question."
                     : "Typing mode is on. You can switch to voice without losing your place."}
                 </p>
                 <Badge variant="outline" className="gap-2">
+                  <StatusMotion
+                    uiState={conversation.uiState}
+                    agentStatus={conversation.agentStatus}
+                    preferredMode={conversation.preferredMode}
+                  />
                   {getStatusIcon(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}
                   {getStatusLabel(conversation.agentStatus, conversation.uiState, conversation.preferredMode)}
                 </Badge>
@@ -496,7 +565,7 @@ export default function ChatPage() {
                     }
                   }}
                   placeholder="Type your answer here"
-                  className="min-h-[52px] max-h-[140px] resize-none"
+                  className="min-h-[44px] max-h-[112px] resize-none"
                   data-testid="input-chat"
                   rows={1}
                 />
@@ -512,15 +581,44 @@ export default function ChatPage() {
               </div>
             </div>
           </div>
-        </Card>
 
-        {sessionData?.formSession?.formData ? (
-          <ChatInlineEditor
-            formSessionId={formSessionId}
-            formData={sessionData.formSession.formData}
-            onUpdated={syncSession}
-          />
-        ) : null}
+          {sessionData?.formSession?.formData ? (
+            <Collapsible open={showInlineEditor} onOpenChange={setShowInlineEditor}>
+              <div className="border-t border-border/70 bg-card/70">
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                    data-testid="button-toggle-inline-editor"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold">Expand to edit collected info</p>
+                      <p className="text-xs text-muted-foreground">
+                        {collectedFieldCount > 0
+                          ? `${collectedFieldCount} saved answer${collectedFieldCount === 1 ? "" : "s"} ready to edit`
+                          : "Your saved answers will appear here as we collect them."}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline">{collectedFieldCount}</Badge>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showInlineEditor ? "rotate-180" : ""}`} />
+                    </div>
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="border-t border-border/70 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <div className="max-h-[28vh] overflow-y-auto">
+                    <ChatInlineEditor
+                      embedded
+                      formSessionId={formSessionId}
+                      formData={sessionData.formSession.formData}
+                      onUpdated={syncSession}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          ) : null}
+        </Card>
       </main>
     </div>
   );
