@@ -34,6 +34,11 @@ interface UseElevenLabsConversationOptions {
   onSessionSync?: () => Promise<void>;
 }
 
+const WORKLET_PATHS = {
+  rawAudioProcessor: "/elevenlabs/rawAudioProcessor.js",
+  audioConcatProcessor: "/elevenlabs/audioConcatProcessor.js",
+} as const;
+
 function normalizeToolArguments(toolName: string, params: Record<string, unknown>) {
   if (toolName !== "update_form_fields") {
     return params;
@@ -348,6 +353,7 @@ export function useElevenLabsConversation({
           connectionType: "webrtc",
           textOnly: true,
           serverLocation: bootstrap.serverLocation,
+          workletPaths: WORKLET_PATHS,
           dynamicVariables: bootstrap.dynamicVariables,
           overrides: {
             agent: {
@@ -377,6 +383,7 @@ export function useElevenLabsConversation({
       connectionType: "webrtc",
       textOnly: mode === "text",
       serverLocation: bootstrap.serverLocation,
+      workletPaths: WORKLET_PATHS,
       dynamicVariables: bootstrap.dynamicVariables,
       overrides: {
         agent: {

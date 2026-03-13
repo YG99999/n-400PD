@@ -75,6 +75,9 @@ async function buildAll() {
 
   console.log("copying pdf assets...");
   await cp("server/pdf", "dist/pdf", { recursive: true });
+
+  console.log("copying ElevenLabs worklets...");
+  await cp("node_modules/@elevenlabs/client/worklets", "dist/public/elevenlabs", { recursive: true });
 }
 
 buildAll().catch((err) => {
