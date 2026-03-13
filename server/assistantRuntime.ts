@@ -12,9 +12,11 @@ import { SECTIONS } from "@shared/schema";
 import { getInitialMessage, processMessage } from "./conversation";
 import { buildFieldCatalogPrompt, determineSectionForPath, getSectionPrompt, summarizeScope } from "./assistantCatalog";
 import {
+  clearPendingHandoff,
   cloneFormData,
   computeReadiness,
   createToolEvent,
+  recordHandoffReady,
   refreshWorkflowState,
   setValueAtPath,
 } from "./workflowState";
@@ -260,7 +262,7 @@ async function runOpenAiAssistantTurn(
       workflowState: {
         ...workingWorkflow,
         toolEvents: combinedToolEvents,
-        pendingRedirect: workingWorkflow.readyForReview ? "review" : workingWorkflow.pendingRedirect,
+        pendingRedirect: null,
       },
       currentSection,
     });
@@ -273,7 +275,7 @@ async function runOpenAiAssistantTurn(
         toolEvents: combinedToolEvents,
       },
       currentSection,
-      redirectIntent: workingWorkflow.pendingRedirect ?? null,
+      redirectIntent: workingWorkflow.chatSession.pendingHandoffTarget === "review" ? "review" : null,
       readiness: workingWorkflow.lastReadiness || computeReadiness(workingForm, workingWorkflow),
       toolEvents,
       redFlags: session.redFlags,
@@ -448,13 +450,13 @@ export function executeAssistantToolCall(
         formData,
         paymentStatus: session.paymentStatus,
         pdfUrl: session.pdfUrl,
-        workflowState: {
+        workflowState: recordHandoffReady({
           ...readinessChecked,
           mode: "review",
           currentContext: "review_edits",
-          pendingRedirect: "review",
+          pendingRedirect: null,
           lastAssistantSummary: String(args.summary || ""),
-        },
+        }, "review", String(args.summary || "")),
         currentSection: "REVIEW",
       });
       return {
@@ -470,7 +472,7 @@ export function executeAssistantToolCall(
         formData,
         paymentStatus: session.paymentStatus,
         pdfUrl: session.pdfUrl,
-        workflowState: updatedWorkflow,
+        workflowState: clearPendingHandoff(updatedWorkflow),
         currentSection,
       });
       if (!readinessChecked.lastReadiness?.eligibleForPayment) {
@@ -556,7 +558,8 @@ function runFallbackAssistantTurn(session: FormSession, userMessage: string): As
   if (fallback.nextSection === "REVIEW") {
     workflowState.mode = "review";
     workflowState.currentContext = "review_edits";
-    workflowState.pendingRedirect = "review";
+    workflowState.pendingRedirect = null;
+    workflowState.chatSession = recordHandoffReady(workflowState, "review", fallback.botMessage).chatSession;
   }
 
   return {
@@ -564,7 +567,7 @@ function runFallbackAssistantTurn(session: FormSession, userMessage: string): As
     updatedFormData: fallback.updatedFormData,
     workflowState,
     currentSection: fallback.nextSection || session.currentSection,
-    redirectIntent: workflowState.pendingRedirect ?? null,
+    redirectIntent: workflowState.chatSession.pendingHandoffTarget === "review" ? "review" : null,
     readiness: workflowState.lastReadiness || computeReadiness(fallback.updatedFormData, workflowState),
     toolEvents: [],
     redFlags: fallback.redFlags,

@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +18,7 @@ import { useElevenLabsConversation } from "@/hooks/use-elevenlabs-conversation";
 import type {
   AgentStatus,
   ChatMessage,
-  ConversationState,
+  ChatSessionSnapshot,
   ReadinessStatus,
   Section,
   WorkflowState,
@@ -24,10 +26,8 @@ import type {
 import { SECTIONS, SECTION_LABELS } from "@shared/schema";
 import {
   ArrowRight,
-  AudioLines,
   CheckCircle2,
-  Circle,
-  ClipboardCheck,
+  ChevronDown,
   Keyboard,
   Loader2,
   LogOut,
@@ -35,7 +35,6 @@ import {
   Mic,
   MicOff,
   Moon,
-  Radio,
   Sun,
   UserCircle2,
   Volume2,
@@ -75,18 +74,6 @@ const MISSING_FIELD_LABELS: Record<string, string> = {
   "family.totalChildren": "How many children you have",
   employment: "Your work or school history",
   travelHistory: "Your trips outside the United States",
-  "moralCharacter.claimedUSCitizen": "Whether you have ever claimed to be a U.S. citizen",
-  "moralCharacter.votedInElection": "Whether you have ever voted in a U.S. election",
-  "moralCharacter.arrestedOrDetained": "Whether you have ever been arrested or detained",
-  "moralCharacter.convictedOfCrime": "Whether you have ever been convicted of a crime",
-  "moralCharacter.usedIllegalDrugs": "Whether you have ever used illegal drugs",
-  "moralCharacter.militaryService": "Your military service history",
-  "moralCharacter.registeredSelectiveService": "Your Selective Service registration status",
-  "oath.supportConstitution": "Whether you support the Constitution",
-  "oath.willingTakeOath": "Whether you are willing to take the oath",
-  "oath.willingBearArms": "Whether you are willing to bear arms if required",
-  "oath.willingNoncombatService": "Whether you are willing to do noncombat service if required",
-  "oath.willingNationalService": "Whether you are willing to do work of national importance if required",
 };
 
 function humanizeMissingField(field: string) {
@@ -108,66 +95,55 @@ function humanizeMissingField(field: string) {
   return `Your ${label.toLowerCase()}`;
 }
 
-function getStatusLabel(status: AgentStatus, mode: "voice" | "text") {
-  if (mode === "text" && (status === "ready" || status === "listening")) {
-    return "Waiting for your message";
+function getSimpleStatusLabel(agentStatus: AgentStatus, uiState: string) {
+  if (uiState === "starting_voice") return "Starting voice";
+  if (uiState === "starting_text") return "Starting typing";
+  if (uiState === "stopped_resumable") return "Stopped";
+  if (uiState === "error_recoverable") return "Connection problem";
+  if (uiState === "active_text") return agentStatus === "thinking" ? "Thinking" : "Typing";
+  if (uiState === "active_voice") {
+    if (agentStatus === "speaking") return "Speaking";
+    if (agentStatus === "thinking") return "Thinking";
+    return "Listening";
   }
-
-  switch (status) {
-    case "connecting":
-      return "Getting ready";
-    case "reconnecting":
-      return "Reconnecting";
-    case "listening":
-      return "Listening to your answer";
-    case "thinking":
-      return "Thinking about what you said";
-    case "speaking":
-      return mode === "text" ? "Writing a reply" : "Asking your next question";
-    case "error":
-      return "Needs a quick retry";
-    case "ready":
-      return mode === "text" ? "Ready to chat" : "Your guide is ready";
-    default:
-      return "Ready";
-  }
+  return "Ready";
 }
 
-function getConnectionLabel(state: ConversationState, mode: "voice" | "text") {
-  switch (state) {
-    case "bootstrapping":
-      return "Preparing your conversation";
-    case "connecting_voice":
-      return "Starting voice";
-    case "connecting_text":
-      return "Opening chat";
-    case "connected_voice":
-      return mode === "text" ? "Voice paused" : "Voice is on";
-    case "connected_text":
-      return "Text only";
-    case "degraded":
-      return "Using text for now";
-    case "error":
-      return "Connection issue";
-    default:
-      return "Not connected";
+function getPrimaryCardCopy(
+  uiState: string,
+  chatState: ChatSessionSnapshot | null | undefined,
+  preferredMode: "voice" | "text",
+) {
+  if (uiState === "handoff_ready") {
+    return {
+      title: chatState?.pendingHandoffTarget === "payment" ? "You are ready for payment" : "You are ready for review",
+      body: chatState?.pendingHandoffTarget === "payment"
+        ? "Your answers are saved. Continue when you are ready to complete payment."
+        : "Your answers are saved. Continue when you are ready to review your application.",
+    };
   }
-}
-
-function getConversationHint(state: ConversationState, mode: "voice" | "text") {
-  if (state === "connected_text" || mode === "text") {
-    return "Type your answer below. Replies will stay on screen and won't play out loud.";
+  if (uiState === "error_recoverable") {
+    return {
+      title: "We hit a connection problem",
+      body: "Your progress is still saved. You can retry voice or keep going by typing.",
+    };
   }
-  if (state === "connected_voice") {
-    return "Your guide will lead with the next question, and you can answer by voice or switch to typing anytime.";
+  if (uiState === "stopped_resumable") {
+    return {
+      title: "You can continue later",
+      body: "We stopped the live chat and saved your progress. Pick up again whenever you are ready.",
+    };
   }
-  if (state === "connecting_voice" || state === "connecting_text" || state === "bootstrapping") {
-    return "Your guide is getting the conversation ready.";
+  if (uiState === "resume_prompt") {
+    return {
+      title: "Welcome back",
+      body: chatState?.summary ?? `You left off in ${preferredMode === "voice" ? "voice" : "typing"} mode. Resume however feels easiest.`,
+    };
   }
-  if (state === "degraded" || state === "error") {
-    return "If voice has trouble, you can keep going by typing right away.";
-  }
-  return "Your guide will ask one clear question at a time and keep the conversation easy to follow.";
+  return {
+    title: "Choose how you want to talk with your guide",
+    body: "Start with voice if you want a spoken walkthrough, or choose typing to keep everything on screen.",
+  };
 }
 
 export default function ChatPage() {
@@ -197,10 +173,10 @@ export default function ChatPage() {
   const messages: ChatMessage[] = sessionData?.conversations || [];
   const workflowState: WorkflowState | undefined = sessionData?.formSession?.workflowState;
   const readiness: ReadinessStatus | undefined = workflowState?.lastReadiness;
+  const chatState: ChatSessionSnapshot | undefined = sessionData?.chatState;
   const currentSection: Section = sessionData?.formSession?.currentSection || "INTRO";
   const currentSectionIndex = Math.max(SECTIONS.indexOf(currentSection), 0);
   const progressPercent = ((currentSectionIndex + 1) / SECTIONS.length) * 100;
-  const inReviewContext = workflowState?.mode === "review" || workflowState?.mode === "post_payment_review";
 
   const syncSession = async () => {
     await queryClient.invalidateQueries({ queryKey: ["/api/form/load", formSessionId] });
@@ -209,6 +185,7 @@ export default function ChatPage() {
   const conversation = useElevenLabsConversation({
     formSessionId,
     initialMessages: messages,
+    initialChatState: chatState,
     currentSection,
     onSwitchToText: () => inputRef.current?.focus(),
     onNavigate: (target) => navigate(`/${target}`),
@@ -225,12 +202,6 @@ export default function ChatPage() {
     }
   }, [conversation.error, toast]);
 
-  useEffect(() => {
-    if (workflowState?.pendingRedirect === "review" && !conversation.countdown) {
-      conversation.startRedirectCountdown("review");
-    }
-  }, [conversation, workflowState?.pendingRedirect]);
-
   const transcript = useMemo(
     () => (conversation.transcript.length > 0 ? conversation.transcript : messages),
     [conversation.transcript, messages],
@@ -241,12 +212,15 @@ export default function ChatPage() {
     [readiness?.missingFields],
   );
 
+  const primaryCopy = getPrimaryCardCopy(conversation.uiState, chatState, conversation.preferredMode);
+  const nextRequiredLabel = chatState?.nextRequiredItem ? humanizeMissingField(chatState.nextRequiredItem) : missingFieldLabels[0];
+
   if (!user || !formSessionId) return null;
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_hsl(var(--primary)/0.16),_transparent_45%),linear-gradient(180deg,_hsl(var(--background)),_hsl(var(--muted)/0.35))]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,_hsl(var(--background)),_hsl(var(--muted)/0.45))]">
       <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="CitizenFlow">
@@ -257,7 +231,7 @@ export default function ChatPage() {
               </svg>
               <div>
                 <p className="text-sm font-semibold leading-none">CitizenFlow</p>
-                <p className="text-xs text-muted-foreground">Voice-first N-400 intake</p>
+                <p className="text-xs text-muted-foreground">N-400 application guide</p>
               </div>
             </Link>
             <Badge variant="outline" className="hidden text-xs sm:inline-flex" data-testid="badge-section">
@@ -267,7 +241,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-2">
             {workflowState?.readyForReview ? (
               <Link href="/review">
-                <Button size="sm" data-testid="button-go-review">
+                <Button size="sm" variant="outline" data-testid="button-go-review">
                   Review <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
@@ -295,191 +269,119 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="space-y-4">
-          <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Progress</p>
-                <p className="text-xs text-muted-foreground">
-                  Section {currentSectionIndex + 1} of {SECTIONS.length}
-                </p>
+      <main className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6">
+        <Card className="border-border/70 bg-card/95 shadow-sm">
+          <CardHeader className="gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1">
+                <CardTitle className="text-xl">{primaryCopy.title}</CardTitle>
+                <p className="text-sm text-muted-foreground">{primaryCopy.body}</p>
               </div>
-              <Badge variant={readiness?.eligibleForReview ? "default" : "secondary"}>
-                {readiness?.eligibleForReview ? "Ready for review" : "Still gathering details"}
+              <Badge variant="outline" className="gap-2 self-start">
+                {conversation.agentStatus === "speaking" ? <Volume2 className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}
+                {getSimpleStatusLabel(conversation.agentStatus, conversation.uiState)}
               </Badge>
             </div>
-            <Progress value={progressPercent} className="mt-4 h-2" data-testid="progress-bar" />
-            <div className="mt-4 flex flex-wrap gap-2">
-              {SECTIONS.map((section, index) => (
-                <div
-                  key={section}
-                  className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
-                    index < currentSectionIndex
-                      ? "bg-primary/10 text-primary"
-                      : index === currentSectionIndex
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                  }`}
+            {nextRequiredLabel ? (
+              <div className="rounded-2xl bg-muted/70 px-4 py-3 text-sm">
+                <span className="font-medium">Next thing we need:</span> {nextRequiredLabel}
+              </div>
+            ) : null}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {(conversation.uiState === "entry" || conversation.uiState === "resume_prompt" || conversation.uiState === "stopped_resumable") ? (
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => void conversation.startConversation("voice")} data-testid={conversation.uiState === "entry" ? "button-start-voice" : "button-resume-voice"}>
+                  <Mic className="mr-2 h-4 w-4" />
+                  {conversation.uiState === "entry" ? "Talk with guide" : "Resume by voice"}
+                </Button>
+                <Button variant="outline" onClick={() => void conversation.startConversation("text")} data-testid={conversation.uiState === "entry" ? "button-start-text" : "button-resume-text"}>
+                  <Keyboard className="mr-2 h-4 w-4" />
+                  {conversation.uiState === "entry" ? "Type instead" : "Resume by typing"}
+                </Button>
+                {conversation.uiState === "resume_prompt" ? (
+                  <Button variant="ghost" onClick={() => void conversation.endCurrentChat()} data-testid="button-end-current-chat">
+                    End current chat
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {conversation.uiState === "handoff_ready" ? (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => void conversation.continueToTarget(chatState?.pendingHandoffTarget ?? "review")}
+                  data-testid="button-continue-handoff"
                 >
-                  {index < currentSectionIndex ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
-                  <span>{SECTION_LABELS[section]}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Your guide</p>
-                <p className="text-xs text-muted-foreground">
-                  {getConversationHint(conversation.conversationState, conversation.preferredMode)}
-                </p>
-              </div>
-              <Badge variant="outline" className="gap-1">
-                {conversation.agentStatus === "speaking" ? <Volume2 className="h-3 w-3" /> : <Radio className="h-3 w-3" />}
-                {getConnectionLabel(conversation.conversationState, conversation.preferredMode)} / {getStatusLabel(conversation.agentStatus, conversation.preferredMode)}
-              </Badge>
-            </div>
-
-            {!conversation.isConnected ? (
-              <div className="mt-5 rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-                    <AudioLines className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="font-medium">Your guide is ready to begin</p>
-                      <p className="text-sm text-muted-foreground">
-                        Start with voice if you want a spoken walkthrough, or type if that feels easier right now.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => void conversation.startConversation("voice")} data-testid="button-start-voice">
-                        <Mic className="mr-2 h-4 w-4" />
-                        Start voice conversation
-                      </Button>
-                      <Button variant="outline" onClick={() => void conversation.startConversation("text")}>
-                        <Keyboard className="mr-2 h-4 w-4" />
-                        Start in text mode
-                      </Button>
-                      {(conversation.conversationState === "degraded" || conversation.conversationState === "error") ? (
-                        <Button variant="ghost" onClick={() => void conversation.startConversation("voice")}>
-                          Retry voice
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-5 space-y-3">
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <Button
-                    variant={conversation.preferredMode === "voice" ? "default" : "outline"}
-                    onClick={() => void conversation.switchMode("voice")}
-                    data-testid="button-mode-voice"
-                  >
-                    <Mic className="mr-2 h-4 w-4" />
-                    Voice mode
-                  </Button>
-                  <Button
-                    variant={conversation.preferredMode === "text" ? "default" : "outline"}
-                    onClick={() => void conversation.switchMode("text")}
-                    data-testid="button-mode-text"
-                  >
-                    <Keyboard className="mr-2 h-4 w-4" />
-                    Typing mode
-                  </Button>
-                </div>
-                <Button variant="ghost" className="w-full justify-start" onClick={() => void conversation.endConversation()}>
-                  {conversation.preferredMode === "voice" ? <MicOff className="mr-2 h-4 w-4" /> : <MessageSquare className="mr-2 h-4 w-4" />}
-                  End current session
+                  Continue
+                </Button>
+                <Button variant="outline" onClick={() => void conversation.stayInChat()} data-testid="button-stay-chat">
+                  Stay here
                 </Button>
               </div>
-            )}
+            ) : null}
 
-            {conversation.countdown ? (
-              <Alert className="mt-4">
-                <ArrowRight className="h-4 w-4" />
-                <AlertTitle>
-                  Opening {conversation.countdown.target} in {conversation.countdown.secondsLeft}s
-                </AlertTitle>
-                <AlertDescription>
-                  Speak or type anything to stay here and cancel the automatic handoff.
-                </AlertDescription>
-              </Alert>
+            {conversation.uiState === "error_recoverable" ? (
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => void conversation.startConversation("voice")} data-testid="button-retry-voice">
+                  <Mic className="mr-2 h-4 w-4" />
+                  Retry voice
+                </Button>
+                <Button variant="outline" onClick={() => void conversation.startConversation("text")} data-testid="button-retry-text">
+                  <Keyboard className="mr-2 h-4 w-4" />
+                  Keep going by typing
+                </Button>
+              </div>
+            ) : null}
+
+            {(conversation.uiState === "active_voice" || conversation.uiState === "active_text" || conversation.uiState === "starting_voice" || conversation.uiState === "starting_text") ? (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={conversation.preferredMode === "voice" ? "default" : "outline"}
+                  onClick={() => void conversation.switchMode("voice")}
+                  data-testid="button-mode-voice"
+                >
+                  <Mic className="mr-2 h-4 w-4" />
+                  Voice mode
+                </Button>
+                <Button
+                  variant={conversation.preferredMode === "text" ? "default" : "outline"}
+                  onClick={() => void conversation.switchMode("text")}
+                  data-testid="button-mode-text"
+                >
+                  <Keyboard className="mr-2 h-4 w-4" />
+                  Typing mode
+                </Button>
+                <Button variant="ghost" onClick={() => void conversation.stopConversation()} data-testid="button-stop-chat">
+                  <MicOff className="mr-2 h-4 w-4" />
+                  Stop
+                </Button>
+              </div>
             ) : null}
 
             {conversation.error ? (
-              <Alert className="mt-4" variant="destructive">
+              <Alert variant="destructive">
                 <AlertTitle>Conversation issue</AlertTitle>
                 <AlertDescription>{conversation.error}</AlertDescription>
               </Alert>
             ) : null}
-          </section>
+          </CardContent>
+        </Card>
 
-          <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">What we still need from you</p>
-                <p className="text-xs text-muted-foreground">
-                  We keep this short so you always know the next important details to finish.
-                </p>
-              </div>
-              {missingFieldLabels.length > 3 ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => conversation.setIsMissingFieldsExpanded(!conversation.isMissingFieldsExpanded)}
-                >
-                  {conversation.isMissingFieldsExpanded ? "Collapse" : "Expand"}
-                </Button>
-              ) : null}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {missingFieldLabels.length > 0 ? (
-                (conversation.isMissingFieldsExpanded ? missingFieldLabels : missingFieldLabels.slice(0, 4)).map((field) => (
-                  <Badge key={field} variant="secondary">{field}</Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">You have already covered the main details we need right now.</p>
-              )}
-            </div>
-          </section>
-        </aside>
-
-        <section className="flex min-h-[70vh] flex-col overflow-hidden rounded-[32px] border border-border/70 bg-background/90 shadow-xl">
-          <div className="border-b border-border/70 px-5 py-4">
+        <Card className="flex min-h-[60vh] flex-col overflow-hidden border-border/70 bg-background/95 shadow-sm">
+          <CardHeader className="border-b border-border/70 pb-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">Conversation</p>
-                <p className="text-xs text-muted-foreground">
-                  Everything you say and everything your guide says will appear here.
+                <CardTitle className="text-lg">Conversation</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Everything stays here so it is easy to pick up where you left off.
                 </p>
               </div>
-              <Badge variant="outline" className="gap-1">
-                {conversation.preferredMode === "voice" ? <Mic className="h-3 w-3" /> : <Keyboard className="h-3 w-3" />}
-                {conversation.preferredMode === "voice" ? "Voice conversation" : "Typing only"}
+              <Badge variant="secondary">
+                {conversation.preferredMode === "voice" ? "Voice" : "Typing"}
               </Badge>
             </div>
-          </div>
-
-          {inReviewContext ? (
-            <div className="border-b border-border bg-primary/5 px-5 py-4">
-              <Alert>
-                <ClipboardCheck className="h-4 w-4" />
-                <AlertTitle>
-                  {workflowState?.mode === "post_payment_review" ? "Post-payment edits" : "Review changes"}
-                </AlertTitle>
-                <AlertDescription>
-                  Your guide will keep the rest of your application in place and only change what you ask to fix.
-                </AlertDescription>
-              </Alert>
-            </div>
-          ) : null}
+          </CardHeader>
 
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
@@ -491,13 +393,11 @@ export default function ChatPage() {
                     <Skeleton className="h-16 w-3/4" />
                   </div>
                 ) : transcript.length === 0 ? (
-                  <div className="flex min-h-[320px] flex-col items-center justify-center text-center text-muted-foreground">
+                  <div className="flex min-h-[260px] flex-col items-center justify-center rounded-3xl border border-dashed border-border text-center text-muted-foreground">
                     <MessageSquare className="mb-4 h-12 w-12 opacity-30" />
-                    <p className="text-base">
-                      {conversation.isConnected ? "Your guide is getting the first question ready." : "Your conversation will appear here as soon as you begin."}
-                    </p>
-                    <p className="mt-2 text-sm">
-                      {conversation.isConnected ? "Stay on this page and your guide will lead the next step." : "You can start by voice or jump straight into typing."}
+                    <p className="text-base">Your conversation will appear here after you begin.</p>
+                    <p className="mt-2 max-w-md text-sm">
+                      Pick voice or typing above. We will save the conversation either way.
                     </p>
                   </div>
                 ) : (
@@ -508,7 +408,7 @@ export default function ChatPage() {
                       data-testid={`message-${message.role}-${message.id}`}
                     >
                       <div
-                        className={`max-w-[88%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                        className={`max-w-[90%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[80%] ${
                           message.role === "user"
                             ? "rounded-br-md bg-primary text-primary-foreground"
                             : "rounded-bl-md border border-border bg-card"
@@ -530,37 +430,24 @@ export default function ChatPage() {
 
           <div className="border-t border-border/70 bg-card/60 px-4 py-4">
             <div className="mx-auto max-w-3xl">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">
+              <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                <p>
                   {conversation.preferredMode === "voice"
                     ? "Voice is on. You can still type anytime if that feels easier."
-                    : "Typing mode is on. Replies will stay on screen until you switch back to voice."}
+                    : "Typing mode is on. Replies stay on screen until you switch back to voice."}
                 </p>
-                {conversation.conversationState === "bootstrapping" || conversation.conversationState === "connecting_voice" || conversation.conversationState === "connecting_text"
-                  ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  : null}
+                {(conversation.uiState === "starting_voice" || conversation.uiState === "starting_text") ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                ) : null}
               </div>
 
               <div className="flex items-end gap-2">
-                <Button
-                  variant={conversation.preferredMode === "voice" ? "default" : "outline"}
-                  size="icon"
-                  className="mb-0.5 shrink-0"
-                  onClick={() => void conversation.switchMode(conversation.preferredMode === "voice" ? "text" : "voice")}
-                  data-testid="button-voice-toggle"
-                  aria-label={conversation.preferredMode === "voice" ? "Switch to typing" : "Switch to voice"}
-                >
-                  {conversation.preferredMode === "voice" ? <Mic className="h-4 w-4" /> : <Keyboard className="h-4 w-4" />}
-                </Button>
                 <Textarea
                   ref={inputRef}
                   value={conversation.composerValue}
                   onChange={(event) => {
                     conversation.setComposerValue(event.target.value);
                     conversation.sendTypingActivity();
-                    if (conversation.countdown) {
-                      conversation.cancelCountdown();
-                    }
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
@@ -568,13 +455,13 @@ export default function ChatPage() {
                       void conversation.sendMessage();
                     }
                   }}
-                  placeholder={inReviewContext ? "Describe the change you want to make..." : "Type your answer here"}
-                  className="min-h-[50px] max-h-[140px] resize-none"
+                  placeholder="Type your answer here"
+                  className="min-h-[52px] max-h-[140px] resize-none"
                   data-testid="input-chat"
                   rows={1}
                 />
                 <Button
-                  className="mb-0.5 shrink-0"
+                  className="shrink-0"
                   onClick={() => void conversation.sendMessage()}
                   disabled={!conversation.composerValue.trim()}
                   data-testid="button-send"
@@ -585,7 +472,79 @@ export default function ChatPage() {
               </div>
             </div>
           </div>
-        </section>
+        </Card>
+
+        <Collapsible className="rounded-3xl border border-border/70 bg-card/95 shadow-sm">
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="flex w-full items-center justify-between rounded-3xl px-5 py-4">
+              <span className="text-sm font-medium">Application details</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="border-t border-border/70 px-5 py-5">
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Progress</p>
+                    <p className="text-xs text-muted-foreground">
+                      Section {currentSectionIndex + 1} of {SECTIONS.length}
+                    </p>
+                  </div>
+                  <Badge variant={readiness?.eligibleForReview ? "default" : "secondary"}>
+                    {readiness?.eligibleForReview ? "Ready for review" : "Still gathering details"}
+                  </Badge>
+                </div>
+                <Progress value={progressPercent} className="h-2" />
+                <div className="flex flex-wrap gap-2">
+                  {SECTIONS.map((section, index) => (
+                    <div
+                      key={section}
+                      className={`rounded-full px-3 py-1 text-xs ${
+                        index < currentSectionIndex
+                          ? "bg-primary/10 text-primary"
+                          : index === currentSectionIndex
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {SECTION_LABELS[section]}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">What we still need</p>
+                    <p className="text-xs text-muted-foreground">
+                      We keep this short so the next step is always clear.
+                    </p>
+                  </div>
+                  {missingFieldLabels.length > 4 ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => conversation.setIsMissingFieldsExpanded(!conversation.isMissingFieldsExpanded)}
+                    >
+                      {conversation.isMissingFieldsExpanded ? "Less" : "More"}
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {missingFieldLabels.length > 0 ? (
+                    (conversation.isMissingFieldsExpanded ? missingFieldLabels : missingFieldLabels.slice(0, 4)).map((field) => (
+                      <Badge key={field} variant="secondary">{field}</Badge>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">You have already covered the main details we need right now.</p>
+                  )}
+                </div>
+              </section>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </main>
     </div>
   );

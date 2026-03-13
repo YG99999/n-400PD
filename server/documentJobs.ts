@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { mapFormDataToPdfFields } from "./pdfMapper";
 import { validatePdfReadiness } from "./pdfValidation";
-import { refreshWorkflowState } from "./workflowState";
+import { clearPendingHandoff, refreshWorkflowState } from "./workflowState";
 import { storage } from "./storage";
 import { persistGeneratedDocument } from "./documentStorage";
 import { config } from "./config";
@@ -118,11 +118,11 @@ class DocumentJobRunner {
         workflowState: refreshWorkflowState({
           ...session,
           pdfUrl: downloadUrl,
-          workflowState: {
+          workflowState: clearPendingHandoff({
             ...session.workflowState,
             pdfNeedsRegeneration: false,
             pendingRedirect: null,
-          },
+          }),
         }),
       });
       await storage.updateJob(job.id, { status: "completed" });

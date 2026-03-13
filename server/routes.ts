@@ -11,6 +11,7 @@ import {
   accountPreferenceSchema,
   accountRequestCreateSchema,
   chatRequestSchema,
+  chatSessionStateUpdateRequestSchema,
   createEmptyWorkflowState,
   elevenLabsSessionRequestSchema,
   elevenLabsToolRequestSchema,
@@ -26,9 +27,14 @@ import {
 import type { ChatMessage, N400FormData, Section } from "@shared/schema";
 import {
   appendListItem,
+  clearPendingHandoff,
   cloneFormData,
   computeReadiness,
+  createChatSessionSnapshot,
   createReviewEdit,
+  mergeChatSessionState,
+  recordConversationStart,
+  recordConversationStop,
   refreshWorkflowState,
   removeListItem,
   setValueAtPath,
@@ -560,7 +566,10 @@ export async function registerRoutes(
       if (!elevenLabsStatus.configured) {
         console.error("ElevenLabs session bootstrap failed:", elevenLabsStatus);
       }
-      const workflowState = refreshWorkflowState(session);
+      const workflowState = recordConversationStart(
+        refreshWorkflowState(session),
+        body.mode ?? "voice",
+      );
       await storage.updateSession(session.id, { workflowState });
       const refreshedSession = (await storage.getSession(session.id)) ?? {
         ...session,
@@ -606,6 +615,34 @@ export async function registerRoutes(
           conversationTokenPresent: Boolean(conversationToken),
           dynamicVariableKeys: Object.keys(dynamicVariables),
         } : undefined,
+      });
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/chat/state", requireAuth, async (req, res) => {
+    try {
+      const userId = getAuthenticatedUserId(req);
+      if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+      const body = chatSessionStateUpdateRequestSchema.parse(req.body);
+      const session = await getAuthedUserSession(userId, body.formSessionId);
+      const nextWorkflowState = refreshWorkflowState({
+        ...session,
+        workflowState: {
+          ...session.workflowState,
+          chatSession: mergeChatSessionState(session.workflowState.chatSession, body.chatSession),
+        },
+      });
+      await storage.updateSession(session.id, { workflowState: nextWorkflowState });
+      return res.json({
+        success: true,
+        workflowState: nextWorkflowState,
+        chatState: createChatSessionSnapshot({
+          messages: session.messages,
+          workflowState: nextWorkflowState,
+        }),
       });
     } catch (err: any) {
       return res.status(400).json({ error: err.message });
@@ -734,6 +771,19 @@ export async function registerRoutes(
         transcriptKind: body.message.transcriptKind,
       };
       await persistTranscriptMessageIfMissing(session.id, message);
+      if (message.role === "assistant") {
+        const workflowState = refreshWorkflowState({
+          ...session,
+          workflowState: {
+            ...session.workflowState,
+            chatSession: mergeChatSessionState(session.workflowState.chatSession, {
+              lastMeaningfulAssistantMessage: message.content,
+              resumable: true,
+            }),
+          },
+        });
+        await storage.updateSession(session.id, { workflowState });
+      }
       return res.status(201).json({ success: true });
     } catch (err: any) {
       return res.status(400).json({ error: err.message });
@@ -870,6 +920,7 @@ export async function registerRoutes(
           latestDocument,
         },
         conversations: session.messages,
+        chatState: createChatSessionSnapshot(session),
       });
     } catch (err: any) {
       return res.status(404).json({ error: err.message });
@@ -903,7 +954,7 @@ export async function registerRoutes(
       const workflowState = refreshWorkflowState({
         ...session,
         formData,
-        workflowState: {
+        workflowState: clearPendingHandoff({
           ...session.workflowState,
           mode: session.paymentStatus === "completed" ? "post_payment_review" : "review",
           currentContext: session.paymentStatus === "completed" ? "post_payment_edits" : "review_edits",
@@ -913,7 +964,7 @@ export async function registerRoutes(
             ...session.workflowState.editHistory,
             createReviewEdit(body.path, "set_scalar", "review"),
           ],
-        },
+        }),
       });
       await storage.updateSession(session.id, { formData, workflowState });
       await storage.updateFormData(session.id, formData);
@@ -934,14 +985,14 @@ export async function registerRoutes(
       const workflowState = refreshWorkflowState({
         ...session,
         formData,
-        workflowState: {
+        workflowState: clearPendingHandoff({
           ...session.workflowState,
           mode: session.paymentStatus === "completed" ? "post_payment_review" : "review",
           currentContext: session.paymentStatus === "completed" ? "post_payment_edits" : "review_edits",
           pendingRedirect: null,
           pdfNeedsRegeneration: Boolean(session.paymentStatus === "completed"),
           editHistory: [...session.workflowState.editHistory, createReviewEdit(body.path, "update_item", "review")],
-        },
+        }),
       });
       await storage.updateSession(session.id, { formData, workflowState });
       await storage.updateFormData(session.id, formData);
@@ -962,14 +1013,14 @@ export async function registerRoutes(
       const workflowState = refreshWorkflowState({
         ...session,
         formData,
-        workflowState: {
+        workflowState: clearPendingHandoff({
           ...session.workflowState,
           mode: session.paymentStatus === "completed" ? "post_payment_review" : "review",
           currentContext: session.paymentStatus === "completed" ? "post_payment_edits" : "review_edits",
           pendingRedirect: null,
           pdfNeedsRegeneration: Boolean(session.paymentStatus === "completed"),
           editHistory: [...session.workflowState.editHistory, createReviewEdit(body.path, "add_item", "review")],
-        },
+        }),
       });
       await storage.updateSession(session.id, { formData, workflowState });
       await storage.updateFormData(session.id, formData);
@@ -990,14 +1041,14 @@ export async function registerRoutes(
       const workflowState = refreshWorkflowState({
         ...session,
         formData,
-        workflowState: {
+        workflowState: clearPendingHandoff({
           ...session.workflowState,
           mode: session.paymentStatus === "completed" ? "post_payment_review" : "review",
           currentContext: session.paymentStatus === "completed" ? "post_payment_edits" : "review_edits",
           pendingRedirect: null,
           pdfNeedsRegeneration: Boolean(session.paymentStatus === "completed"),
           editHistory: [...session.workflowState.editHistory, createReviewEdit(body.path, "remove_item", "review")],
-        },
+        }),
       });
       await storage.updateSession(session.id, { formData, workflowState });
       await storage.updateFormData(session.id, formData);
