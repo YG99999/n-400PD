@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { isSupabaseAuthEnabled, supabase } from "@/lib/supabase";
+import { getAppUrl, isSupabaseAuthEnabled, supabase } from "@/lib/supabase";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -241,7 +241,7 @@ export function ResetPasswordPage() {
     setIsSubmitting(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/#/reset-password`,
+        redirectTo: `${getAppUrl()}/#/reset-password`,
       });
       if (error) throw error;
       toast({

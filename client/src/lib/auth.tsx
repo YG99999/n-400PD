@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { apiRequest } from "./queryClient";
-import { isSupabaseAuthEnabled, supabase } from "./supabase";
+import { getAppUrl, isSupabaseAuthEnabled, supabase } from "./supabase";
 
 interface AuthUser {
   id: string;
@@ -88,12 +88,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       if (isSupabaseAuthEnabled && supabase) {
+        const appUrl = getAppUrl();
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: appUrl || undefined,
           },
         });
         if (error) throw error;
