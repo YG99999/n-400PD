@@ -271,7 +271,6 @@ export default function ChatPage() {
             <div className="space-y-2 px-4 py-3 transition-all duration-200">
               <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>{SECTION_LABELS[currentSection]}</span>
-                <span>{Math.round(progressPercent)}%</span>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -312,7 +311,12 @@ export default function ChatPage() {
             </div>
           </div>
 
-          <div className="relative flex-1 overflow-hidden">
+          <div
+            className={`relative overflow-hidden transition-all duration-300 ${
+              showInlineEditor ? "max-h-0 flex-none opacity-0" : "flex-1 opacity-100"
+            }`}
+            aria-hidden={showInlineEditor}
+          >
             <div
               ref={transcriptRef}
               onScroll={handleTranscriptScroll}
@@ -461,8 +465,12 @@ export default function ChatPage() {
           </div>
 
           {sessionData?.formSession?.formData ? (
-            <Collapsible open={showInlineEditor} onOpenChange={setShowInlineEditor}>
-              <div className="border-t border-border/70 bg-card/70">
+            <Collapsible
+              open={showInlineEditor}
+              onOpenChange={setShowInlineEditor}
+              className={`flex min-h-0 flex-col transition-all duration-300 ${showInlineEditor ? "flex-1" : "shrink-0"}`}
+            >
+              <div className="flex min-h-0 flex-col border-t border-border/70 bg-card/70">
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
@@ -483,8 +491,8 @@ export default function ChatPage() {
                     </div>
                   </button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="border-t border-border/70 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div className="app-scrollbar max-h-[36vh] overflow-y-auto transition-all duration-200">
+                <CollapsibleContent className="flex-1 min-h-0 border-t border-border/70 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <div className="app-scrollbar h-full overflow-y-auto transition-all duration-200">
                     <ChatInlineEditor
                       embedded
                       formSessionId={formSessionId}
