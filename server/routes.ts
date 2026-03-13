@@ -46,6 +46,7 @@ import {
   buildElevenLabsDynamicVariables,
   buildElevenLabsFirstMessage,
   createElevenLabsConversationToken,
+  createElevenLabsSignedUrl,
   mapTranscriptMessage,
   verifyElevenLabsWebhookSignature,
 } from "./elevenlabs";
@@ -558,9 +559,13 @@ export async function registerRoutes(
         workflowState,
       };
 
-      const conversationToken = await createElevenLabsConversationToken();
+      const [conversationToken, signedUrl] = await Promise.all([
+        createElevenLabsConversationToken(),
+        createElevenLabsSignedUrl(),
+      ]);
       return res.json({
         conversationToken,
+        signedUrl,
         serverLocation: config.elevenLabsServerLocation,
         agentId: config.elevenLabsAgentId,
         formSessionId: refreshedSession.id,

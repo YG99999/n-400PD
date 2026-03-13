@@ -9,6 +9,10 @@ interface ElevenLabsConversationTokenResponse {
   token: string;
 }
 
+interface ElevenLabsSignedUrlResponse {
+  signed_url: string;
+}
+
 function formatMissingFields(session: FormSession) {
   const missingFields = session.workflowState.lastReadiness?.missingFields ?? [];
   return missingFields.length > 0 ? missingFields.slice(0, 8).join(", ") : "none";
@@ -95,6 +99,30 @@ export async function createElevenLabsConversationToken() {
 
   const body = await response.json() as ElevenLabsConversationTokenResponse;
   return body.token;
+}
+
+export async function createElevenLabsSignedUrl() {
+  const status = getElevenLabsConfigStatus();
+  if (!status.configured) {
+    throw new Error(`ElevenLabs is not configured on the web service. Missing: ${status.missing.join(", ")}`);
+  }
+
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(config.elevenLabsAgentId)}`,
+    {
+      method: "GET",
+      headers: {
+        "xi-api-key": config.elevenLabsApiKey,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to create ElevenLabs signed URL: ${await response.text()}`);
+  }
+
+  const body = await response.json() as ElevenLabsSignedUrlResponse;
+  return body.signed_url;
 }
 
 export function verifyElevenLabsWebhookSignature(rawBody: string, signatureHeader?: string | string[] | null) {

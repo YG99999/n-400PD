@@ -5,6 +5,7 @@ import type { AgentStatus, ChatMessage, ConversationMode, Section } from "@share
 
 interface BootstrapResponse {
   conversationToken: string;
+  signedUrl?: string;
   serverLocation: string;
   agentId: string;
   formSessionId: string;
@@ -40,11 +41,7 @@ const WORKLET_PATHS = {
 } as const;
 
 function createSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMode) {
-  return {
-    conversationToken: bootstrap.conversationToken,
-    connectionType: "webrtc" as const,
-    textOnly: mode === "text",
-    serverLocation: bootstrap.serverLocation,
+  const commonOptions = {
     workletPaths: WORKLET_PATHS,
     dynamicVariables: bootstrap.dynamicVariables,
     overrides: {
@@ -62,6 +59,23 @@ function createSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMo
         version: "1",
       },
     },
+  };
+
+  if (bootstrap.signedUrl) {
+    return {
+      signedUrl: bootstrap.signedUrl,
+      connectionType: "websocket" as const,
+      textOnly: mode === "text",
+      ...commonOptions,
+    };
+  }
+
+  return {
+    conversationToken: bootstrap.conversationToken,
+    connectionType: "webrtc" as const,
+    textOnly: mode === "text",
+    serverLocation: bootstrap.serverLocation,
+    ...commonOptions,
   };
 }
 
@@ -438,7 +452,14 @@ export function useElevenLabsConversation({
       onSwitchToText?.();
     }
 
-    conversation.sendUserMessage(value);
+    try {
+      conversation.sendUserMessage(value);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(`Unable to send the message yet: ${message}`);
+      setAgentStatus("error");
+      return;
+    }
     setComposerValue("");
     setAgentStatus("thinking");
   }, [cancelCountdown, composerValue, conversation, onSwitchToText, preferredMode, startConversation]);
@@ -486,7 +507,11 @@ export function useElevenLabsConversation({
     transcript,
     composerValue,
     setComposerValue,
-    sendTypingActivity: conversation.sendUserActivity,
+    sendTypingActivity: () => {
+      if (conversation.status === "connected") {
+        conversation.sendUserActivity();
+      }
+    },
     sendMessage,
     startConversation,
     endConversation,
