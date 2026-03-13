@@ -9,12 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
-import type { N400FormData, Section } from "@shared/schema";
+import type { N400FormData, Section, WorkflowState } from "@shared/schema";
 import { SECTION_LABELS, SECTIONS } from "@shared/schema";
 
 interface ChatInlineEditorProps {
   formSessionId: string;
   formData: N400FormData;
+  workflowState?: WorkflowState;
   onUpdated: () => Promise<void>;
   embedded?: boolean;
 }
@@ -84,6 +85,46 @@ function flattenCollectedFields(value: unknown, path = ""): CollectedField[] {
   }];
 }
 
+function getValueAtPath(source: unknown, path: string): unknown {
+  const normalized = path.replace(/\[(\d+)\]/g, ".$1");
+  return normalized.split(".").reduce<unknown>((current, part) => {
+    if (current === null || current === undefined) return undefined;
+    if (Array.isArray(current)) {
+      const index = Number(part);
+      return Number.isInteger(index) ? current[index] : undefined;
+    }
+    if (typeof current === "object") {
+      return (current as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, source);
+}
+
+export function extractCollectedFields(formData: N400FormData, workflowState?: WorkflowState): CollectedField[] {
+  const flattened = flattenCollectedFields(formData);
+  const fieldMap = new Map(flattened.map((field) => [field.path, field]));
+
+  const completedPaths = Object.values(workflowState?.fieldStates ?? {})
+    .filter((field) => field.status === "complete")
+    .map((field) => field.path);
+
+  for (const path of completedPaths) {
+    const value = getValueAtPath(formData, path);
+    if (!isScalar(value) || isBlank(value)) continue;
+    if (fieldMap.has(path)) continue;
+
+    fieldMap.set(path, {
+      path,
+      value,
+      section: determineSection(path),
+      label: humanizePath(path),
+      multiline: typeof value === "string" && value.length > 48,
+    });
+  }
+
+  return Array.from(fieldMap.values()).sort((fieldA, fieldB) => fieldA.path.localeCompare(fieldB.path));
+}
+
 function InlineEditorField({
   field,
   onSave,
@@ -151,10 +192,11 @@ function eventValueToTyped(source: string | number | boolean, draft: string) {
 export function ChatInlineEditor({
   formSessionId,
   formData,
+  workflowState,
   onUpdated,
   embedded = false,
 }: ChatInlineEditorProps) {
-  const fields = useMemo(() => flattenCollectedFields(formData), [formData]);
+  const fields = useMemo(() => extractCollectedFields(formData, workflowState), [formData, workflowState]);
 
   const mutation = useMutation({
     mutationFn: async ({ path, value }: { path: string; value: string | number | boolean }) => {

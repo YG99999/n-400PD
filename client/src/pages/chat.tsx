@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { ChatInlineEditor } from "@/components/chat-inline-editor";
+import { ChatInlineEditor, extractCollectedFields } from "@/components/chat-inline-editor";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useToast } from "@/hooks/use-toast";
@@ -218,25 +218,11 @@ export default function ChatPage() {
     if (!sessionData?.formSession?.formData) {
       return 0;
     }
-
-    const countScalars = (value: unknown): number => {
-      if (Array.isArray(value)) {
-        return value.reduce((total, entry) => total + countScalars(entry), 0);
-      }
-      if (value && typeof value === "object") {
-        return Object.values(value as Record<string, unknown>).reduce<number>(
-          (total, entry) => total + countScalars(entry),
-          0,
-        );
-      }
-      if (typeof value === "boolean") return 1;
-      if (typeof value === "number") return 1;
-      if (typeof value === "string" && value.trim().length > 0) return 1;
-      return 0;
-    };
-
-    return countScalars(sessionData.formSession.formData);
-  }, [sessionData?.formSession?.formData]);
+    return extractCollectedFields(
+      sessionData.formSession.formData,
+      sessionData.formSession.workflowState,
+    ).length;
+  }, [sessionData?.formSession?.formData, sessionData?.formSession?.workflowState]);
 
   const missingFieldLabels = useMemo(
     () => (readiness?.missingFields ?? []).map(humanizeField),
@@ -442,7 +428,7 @@ export default function ChatPage() {
                   <span>{Math.round(progressPercent)}%</span>
                 </div>
                 <Progress value={progressPercent} className="h-2" />
-                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                <div className="app-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                   {SECTIONS.map((section, index) => (
                     <div
                       key={section}
@@ -473,7 +459,7 @@ export default function ChatPage() {
             <div
               ref={transcriptRef}
               onScroll={handleTranscriptScroll}
-              className="h-full overflow-y-auto px-4 py-4"
+              className="app-scrollbar h-full overflow-y-auto px-4 py-4"
             >
               <div className="mx-auto flex max-w-3xl flex-col gap-3 pb-4">
                 {isLoadingSession ? (
@@ -606,11 +592,12 @@ export default function ChatPage() {
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="border-t border-border/70 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div className="max-h-[28vh] overflow-y-auto">
+                  <div className="app-scrollbar max-h-[28vh] overflow-y-auto">
                     <ChatInlineEditor
                       embedded
                       formSessionId={formSessionId}
                       formData={sessionData.formSession.formData}
+                      workflowState={sessionData.formSession.workflowState}
                       onUpdated={syncSession}
                     />
                   </div>
