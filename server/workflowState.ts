@@ -1,5 +1,8 @@
 import { randomUUID } from "crypto";
 import {
+  type ChatSessionSnapshot,
+  type ChatSessionState,
+  type ConversationMode,
   type FieldCollectionState,
   type FormSession,
   type N400FormData,
@@ -182,6 +185,124 @@ export function computeReadiness(
   };
 }
 
+function getDefaultChatSessionState(): ChatSessionState {
+  return {
+    flowState: "entry",
+    resumable: false,
+    pendingHandoffTarget: null,
+  };
+}
+
+export function mergeChatSessionState(
+  existing: ChatSessionState | undefined,
+  updates: Partial<ChatSessionState>,
+): ChatSessionState {
+  return {
+    ...getDefaultChatSessionState(),
+    ...existing,
+    ...updates,
+  };
+}
+
+export function createChatSessionSnapshot(
+  session: Pick<FormSession, "messages" | "workflowState">,
+): ChatSessionSnapshot {
+  const hasPersistedChatSession = Boolean(session.workflowState.chatSession);
+  const chatSession = mergeChatSessionState(session.workflowState.chatSession, {});
+  const readiness = session.workflowState.lastReadiness;
+  const lastAssistantPrompt = chatSession.lastMeaningfulAssistantMessage
+    ?? [...session.messages].reverse().find((message) => message.role === "assistant")?.content;
+  const nextRequiredItem = readiness?.missingFields[0];
+  const summary = chatSession.pendingHandoffTarget
+    ? chatSession.pendingHandoffTarget === "payment"
+      ? "Your application is ready for payment."
+      : "Your application is ready for review."
+    : nextRequiredItem
+      ? "We saved your progress and know the next detail to collect."
+      : lastAssistantPrompt
+        ? "We saved your conversation and can continue where you left off."
+        : "Choose how you want to continue your application.";
+
+  const flowState = chatSession.pendingHandoffTarget
+    ? "handoff_ready"
+    : hasPersistedChatSession
+      ? chatSession.flowState === "entry"
+        ? "entry"
+        : "resume_prompt"
+      : session.messages.length > 0
+        ? "resume_prompt"
+        : "entry";
+
+  return {
+    flowState,
+    resumable: flowState !== "entry",
+    lastUsedMode: chatSession.lastUsedMode,
+    pendingHandoffTarget: chatSession.pendingHandoffTarget ?? null,
+    lastAssistantPrompt,
+    summary,
+    nextRequiredItem,
+  };
+}
+
+export function recordConversationStart(
+  workflowState: WorkflowState,
+  mode: ConversationMode,
+): WorkflowState {
+  return {
+    ...workflowState,
+    chatSession: mergeChatSessionState(workflowState.chatSession, {
+      flowState: "active",
+      lastUsedMode: mode,
+      resumable: true,
+      lastTransportError: undefined,
+      stoppedAt: undefined,
+    }),
+  };
+}
+
+export function recordConversationStop(
+  workflowState: WorkflowState,
+  reason?: string,
+): WorkflowState {
+  return {
+    ...workflowState,
+    chatSession: mergeChatSessionState(workflowState.chatSession, {
+      flowState: "stopped",
+      resumable: true,
+      lastTransportError: reason || undefined,
+      stoppedAt: new Date().toISOString(),
+    }),
+  };
+}
+
+export function recordHandoffReady(
+  workflowState: WorkflowState,
+  target: "review" | "payment",
+  summary?: string,
+): WorkflowState {
+  return {
+    ...workflowState,
+    chatSession: mergeChatSessionState(workflowState.chatSession, {
+      flowState: "handoff_ready",
+      resumable: true,
+      pendingHandoffTarget: target,
+      lastMeaningfulAssistantMessage: summary || workflowState.chatSession?.lastMeaningfulAssistantMessage,
+      lastTransportError: undefined,
+      stoppedAt: undefined,
+    }),
+  };
+}
+
+export function clearPendingHandoff(workflowState: WorkflowState): WorkflowState {
+  return {
+    ...workflowState,
+    chatSession: mergeChatSessionState(workflowState.chatSession, {
+      flowState: workflowState.chatSession?.resumable ? "resume_prompt" : "entry",
+      pendingHandoffTarget: null,
+    }),
+  };
+}
+
 export function refreshWorkflowState(
   session: Pick<FormSession, "formData" | "paymentStatus" | "pdfUrl" | "workflowState" | "currentSection">,
 ): WorkflowState {
@@ -212,5 +333,8 @@ export function refreshWorkflowState(
         ? "post_payment_review"
         : existing.mode,
     pdfNeedsRegeneration: Boolean(existing.pdfNeedsRegeneration),
+    chatSession: mergeChatSessionState(existing.chatSession, {
+      pendingHandoffTarget: existing.chatSession?.pendingHandoffTarget ?? null,
+    }),
   };
 }

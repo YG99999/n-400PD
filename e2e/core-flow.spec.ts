@@ -1,6 +1,16 @@
 import { test, expect } from "@playwright/test";
 
 test("demo user can use chat, review, payment, regenerate, and download through the UI", async ({ page }) => {
+  const openTextMode = async () => {
+    const resumeButton = page.getByTestId("button-resume-text");
+    const startButton = page.getByTestId("button-start-text");
+    if (await resumeButton.count()) {
+      await resumeButton.click();
+      return;
+    }
+    await startButton.click();
+  };
+
   await page.goto("/#/");
 
   await expect(page.getByTestId("text-brand-name")).toBeVisible();
@@ -8,6 +18,7 @@ test("demo user can use chat, review, payment, regenerate, and download through 
 
   await expect(page).toHaveURL(/#\/chat$/);
   await expect(page.getByTestId("badge-section")).toContainText("Personal Information");
+  await openTextMode();
   await expect(page.getByTestId("input-chat")).toBeVisible();
 
   await page.getByTestId("input-chat").fill("Carlos Eduardo Martinez");
@@ -25,7 +36,8 @@ test("demo user can use chat, review, payment, regenerate, and download through 
 
   await page.getByTestId("button-resume-chat").click();
   await expect(page).toHaveURL(/#\/chat$/);
-  await expect(page.getByText(/review context preserved/i)).toBeVisible();
+  await openTextMode();
+  await expect(page.getByTestId("input-chat")).toBeVisible();
 
   await page.goto("/#/review");
   await page.getByTestId("checkbox-review-confirm").click();

@@ -265,6 +265,34 @@ export type AgentStatus =
   | "reconnecting"
   | "error";
 
+export type ChatSessionFlowState =
+  | "entry"
+  | "active"
+  | "stopped"
+  | "resume_prompt"
+  | "handoff_ready"
+  | "error_recoverable";
+
+export interface ChatSessionState {
+  flowState: ChatSessionFlowState;
+  lastUsedMode?: ConversationMode;
+  resumable: boolean;
+  pendingHandoffTarget?: "review" | "payment" | null;
+  lastMeaningfulAssistantMessage?: string;
+  lastTransportError?: string | null;
+  stoppedAt?: string | null;
+}
+
+export interface ChatSessionSnapshot {
+  flowState: "entry" | "resume_prompt" | "handoff_ready";
+  resumable: boolean;
+  lastUsedMode?: ConversationMode;
+  pendingHandoffTarget?: "review" | "payment" | null;
+  lastAssistantPrompt?: string;
+  summary: string;
+  nextRequiredItem?: string;
+}
+
 export interface ReviewEdit {
   id: string;
   path: string;
@@ -285,6 +313,7 @@ export interface WorkflowState {
   readyForReview: boolean;
   pdfNeedsRegeneration: boolean;
   reviewConfirmedAt?: string;
+  chatSession: ChatSessionState;
   toolEvents: ToolEvent[];
   editHistory: ReviewEdit[];
 }
@@ -387,6 +416,22 @@ export const elevenLabsTranscriptPersistRequestSchema = z.object({
   message: elevenLabsTranscriptMessageSchema,
 });
 export type ElevenLabsTranscriptPersistRequest = z.infer<typeof elevenLabsTranscriptPersistRequestSchema>;
+
+export const chatSessionStateSchema = z.object({
+  flowState: z.enum(["entry", "active", "stopped", "resume_prompt", "handoff_ready", "error_recoverable"]).optional(),
+  lastUsedMode: z.enum(["voice", "text"]).optional(),
+  resumable: z.boolean().optional(),
+  pendingHandoffTarget: z.enum(["review", "payment"]).nullable().optional(),
+  lastMeaningfulAssistantMessage: z.string().max(5000).optional(),
+  lastTransportError: z.string().max(5000).nullable().optional(),
+  stoppedAt: z.string().nullable().optional(),
+});
+
+export const chatSessionStateUpdateRequestSchema = z.object({
+  formSessionId: z.string(),
+  chatSession: chatSessionStateSchema,
+});
+export type ChatSessionStateUpdateRequest = z.infer<typeof chatSessionStateUpdateRequestSchema>;
 
 export const reviewScalarUpdateSchema = z.object({
   formSessionId: z.string(),
@@ -504,6 +549,11 @@ export function createEmptyWorkflowState(): WorkflowState {
     pendingRedirect: null,
     readyForReview: false,
     pdfNeedsRegeneration: false,
+    chatSession: {
+      flowState: "entry",
+      resumable: false,
+      pendingHandoffTarget: null,
+    },
     toolEvents: [],
     editHistory: [],
   };
