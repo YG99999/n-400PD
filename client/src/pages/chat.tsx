@@ -19,7 +19,6 @@ import type {
   AgentStatus,
   ChatMessage,
   ChatSessionSnapshot,
-  ReadinessStatus,
   Section,
   WorkflowState,
 } from "@shared/schema";
@@ -36,60 +35,7 @@ import {
   PauseCircle,
   Sun,
   UserCircle2,
-  Volume2,
-  Waves,
 } from "lucide-react";
-
-const MISSING_FIELD_LABELS: Record<string, string> = {
-  "personalInfo.fullName": "Your full legal name",
-  "personalInfo.firstName": "Your first name",
-  "personalInfo.lastName": "Your last name",
-  "personalInfo.dateOfBirth": "Your date of birth",
-  "personalInfo.aNumber": "Your A-Number",
-  "personalInfo.dateBecamePR": "The date you became a permanent resident",
-  "personalInfo.countryOfBirth": "Your country of birth",
-  "personalInfo.nationality": "Your current nationality",
-  "personalInfo.gender": "The gender listed on your application",
-  "personalInfo.email": "Your email address",
-  "personalInfo.phone": "Your daytime phone number",
-  "personalInfo.eligibilityBasis": "How you qualify to apply for citizenship",
-  "biographic.ethnicity": "Your ethnicity",
-  "biographic.race": "Your race",
-  "biographic.heightFeet": "Your height",
-  "biographic.heightInches": "Your height",
-  "biographic.weightLbs": "Your weight",
-  "biographic.eyeColor": "Your eye color",
-  "biographic.hairColor": "Your hair color",
-  "residenceHistory[0].address": "Your current street address",
-  "residenceHistory[0].city": "Your current city",
-  "residenceHistory[0].state": "Your current state",
-  "residenceHistory[0].zip": "Your current ZIP code",
-  "residenceHistory[0].country": "Your current country",
-  "residenceHistory[0].moveInDate": "When you moved to your current address",
-  "family.maritalStatus": "Your current marital status",
-  "family.timesMarried": "How many times you have been married",
-  "family.spouse.fullName": "Your spouse's full name",
-  "family.spouse.dateOfBirth": "Your spouse's date of birth",
-  "family.spouse.dateOfMarriage": "The date of your current marriage",
-  "family.totalChildren": "How many children you have",
-  employment: "Your work or school history",
-  travelHistory: "Your trips outside the United States",
-};
-
-function humanizeField(field: string) {
-  if (MISSING_FIELD_LABELS[field]) return MISSING_FIELD_LABELS[field];
-
-  return field
-    .replace(/\[(\d+)\]/g, (_match, index) => ` ${Number(index) + 1} `)
-    .split(".")
-    .map((part) =>
-      part
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .replace(/^./, (value) => value.toUpperCase())
-        .trim(),
-    )
-    .join(" ");
-}
 
 function getStatusLabel(agentStatus: AgentStatus, uiState: string, preferredMode: "voice" | "text") {
   if (uiState === "entry") return "Ready";
@@ -115,10 +61,7 @@ function getStatusIcon(uiState: string, agentStatus: AgentStatus, preferredMode:
   if (uiState === "starting_voice" || uiState === "starting_text" || uiState === "switching_voice" || uiState === "switching_text") {
     return <Loader2 className="h-3.5 w-3.5 animate-spin" />;
   }
-  if (preferredMode === "voice") {
-    return agentStatus === "speaking" ? <Volume2 className="h-3.5 w-3.5" /> : <Waves className="h-3.5 w-3.5" />;
-  }
-  return <MessageSquare className="h-3.5 w-3.5" />;
+  return preferredMode === "voice" ? <Mic className="h-3.5 w-3.5" /> : <MessageSquare className="h-3.5 w-3.5" />;
 }
 
 function StatusMotion({ uiState, agentStatus, preferredMode }: {
@@ -171,6 +114,7 @@ export default function ChatPage() {
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [stickToBottom, setStickToBottom] = useState(true);
   const [showInlineEditor, setShowInlineEditor] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
 
   useEffect(() => {
     if (!user || !formSessionId) {
@@ -191,7 +135,6 @@ export default function ChatPage() {
 
   const messages: ChatMessage[] = sessionData?.conversations || [];
   const workflowState: WorkflowState | undefined = sessionData?.formSession?.workflowState;
-  const readiness: ReadinessStatus | undefined = workflowState?.lastReadiness;
   const chatState: ChatSessionSnapshot | undefined = sessionData?.chatState;
   const currentSection: Section = sessionData?.formSession?.currentSection || "INTRO";
   const currentSectionIndex = Math.max(SECTIONS.indexOf(currentSection), 0);
@@ -235,18 +178,13 @@ export default function ChatPage() {
       sessionData.formSession.workflowState,
     ).length;
   }, [sessionData?.formSession?.formData, sessionData?.formSession?.workflowState]);
-
-  const missingFieldLabels = useMemo(
-    () => (readiness?.missingFields ?? []).map(humanizeField),
-    [readiness?.missingFields],
-  );
-
-  const currentPrompt = chatState?.currentPrompt
-    ?? [...transcript].reverse().find((message) => message.role === "assistant")?.content
-    ?? "Your guide is getting your first question ready.";
-  const nextRequiredLabel = chatState?.nextRequiredItem
-    ? humanizeField(chatState.nextRequiredItem)
-    : missingFieldLabels[0];
+  const isVoiceLive = conversation.uiState === "active_voice"
+    || conversation.uiState === "starting_voice"
+    || conversation.uiState === "switching_voice";
+  const isHeaderCondensed = showInlineEditor;
+  const isComposerCondensed = showInlineEditor;
+  const canPauseVoice = isVoiceLive;
+  const canStartVoice = !canPauseVoice;
 
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     const element = transcriptRef.current;
@@ -330,91 +268,23 @@ export default function ChatPage() {
       <main className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
         <Card className="flex h-[calc(100vh-5.5rem)] min-h-[560px] flex-col overflow-hidden border-border/70 bg-background/95 shadow-sm">
           <div className="sticky top-0 z-20 border-b border-border/70 bg-card/95 backdrop-blur">
-            <div className="space-y-3 px-4 py-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="gap-2">
-                      <StatusMotion
-                        uiState={conversation.uiState}
-                        agentStatus={conversation.agentStatus}
-                        preferredMode={conversation.preferredMode}
-                      />
-                      {getStatusIcon(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}
-                      {getStatusLabel(conversation.agentStatus, conversation.uiState, conversation.preferredMode)}
-                    </Badge>
-                    <Badge variant="secondary" data-testid="badge-section">
-                      {SECTION_LABELS[currentSection]}
-                    </Badge>
-                  </div>
-                  <h1 className="text-base font-semibold">Current question</h1>
-                  <p className="max-w-3xl text-sm text-muted-foreground">
-                    {currentPrompt}
-                  </p>
-                  {nextRequiredLabel ? (
-                    <p className="text-xs text-muted-foreground">
-                      Next thing we still need: <span className="font-medium text-foreground">{nextRequiredLabel}</span>
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex shrink-0 flex-wrap gap-2">
-                  {(conversation.uiState === "entry" || conversation.uiState === "resume_prompt" || conversation.uiState === "stopped_resumable") ? (
-                    <>
-                      <Button size="sm" onClick={() => void conversation.startConversation("voice")} data-testid={conversation.uiState === "entry" ? "button-start-voice" : "button-resume-voice"}>
-                        <Mic className="mr-2 h-4 w-4" />
-                        {conversation.uiState === "entry" ? "Talk with guide" : "Resume by voice"}
-                      </Button>
-                    </>
-                  ) : null}
-
-                  {conversation.uiState === "error_recoverable" ? (
-                    <>
-                      <Button size="sm" onClick={() => void conversation.startConversation("voice")} data-testid="button-retry-voice">
-                        <Mic className="mr-2 h-4 w-4" />
-                        Retry voice
-                      </Button>
-                    </>
-                  ) : null}
-
-                  {conversation.uiState === "handoff_ready" ? (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => void conversation.continueToTarget(chatState?.pendingHandoffTarget ?? "review")}
-                        data-testid="button-continue-handoff"
-                      >
-                        Continue
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => void conversation.stayInChat()} data-testid="button-stay-chat">
-                        Stay here
-                      </Button>
-                    </>
-                  ) : null}
-
-                  {(conversation.uiState === "active_voice"
-                    || conversation.uiState === "active_text"
-                    || conversation.uiState === "starting_voice"
-                    || conversation.uiState === "starting_text"
-                    || conversation.uiState === "switching_voice"
-                    || conversation.uiState === "switching_text") ? (
-                    <>
-                      <Button size="sm" variant="ghost" onClick={() => void conversation.pauseConversation()} data-testid="button-pause-chat">
-                        <PauseCircle className="mr-2 h-4 w-4" />
-                        Pause chat
-                      </Button>
-                    </>
-                  ) : null}
-                </div>
+            <div className="space-y-2 px-4 py-3 transition-all duration-200">
+              <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                <span>{SECTION_LABELS[currentSection]}</span>
+                <span>{Math.round(progressPercent)}%</span>
               </div>
-
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Section {currentSectionIndex + 1} of {SECTIONS.length}</span>
                   <span>{Math.round(progressPercent)}%</span>
                 </div>
                 <Progress value={progressPercent} className="h-2" />
-                <div className="app-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    isHeaderCondensed ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
+                  }`}
+                >
+                  <div className="app-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                   {SECTIONS.map((section, index) => (
                     <div
                       key={section}
@@ -429,6 +299,7 @@ export default function ChatPage() {
                       {SECTION_LABELS[section]}
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
 
@@ -491,7 +362,7 @@ export default function ChatPage() {
               <Button
                 size="sm"
                 variant="secondary"
-                className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full border border-border/70 bg-background/95 shadow-lg"
+                className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2 rounded-full border border-border/70 bg-background/95 shadow-lg"
                 onClick={() => {
                   setStickToBottom(true);
                   scrollToBottom();
@@ -504,37 +375,47 @@ export default function ChatPage() {
             ) : null}
           </div>
 
-          <div className="border-t border-border/70 bg-card/60 px-4 py-3">
+          <div className={`border-t border-border/70 bg-card/60 px-4 transition-all duration-200 ${isComposerCondensed ? "py-2" : "py-3"}`}>
             <div className="mx-auto max-w-3xl">
-              <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                <p className="line-clamp-2">
-                  {conversation.preferredMode === "voice"
-                    ? "Voice is on. You can type at any time and we will keep the same question."
-                    : "Typing mode is on. You can switch to voice without losing your place."}
-                </p>
-                <Badge variant="outline" className="gap-2">
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  isComposerCondensed ? "max-h-0 opacity-0" : "mb-2 max-h-20 opacity-100"
+                }`}
+              >
+                <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <p className="line-clamp-2">
+                    {conversation.preferredMode === "voice"
+                      ? "Voice is on. You can type at any time and we will keep the same question."
+                      : "Typing mode is on. You can switch to voice without losing your place."}
+                  </p>
+                  <Badge variant="outline" className="gap-2">
+                    <StatusMotion
+                      uiState={conversation.uiState}
+                      agentStatus={conversation.agentStatus}
+                      preferredMode={conversation.preferredMode}
+                    />
+                    {getStatusIcon(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}
+                    {getStatusLabel(conversation.agentStatus, conversation.uiState, conversation.preferredMode)}
+                  </Badge>
+                </div>
+                <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
                   <StatusMotion
                     uiState={conversation.uiState}
                     agentStatus={conversation.agentStatus}
                     preferredMode={conversation.preferredMode}
                   />
-                  {getStatusIcon(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}
-                  {getStatusLabel(conversation.agentStatus, conversation.uiState, conversation.preferredMode)}
-                </Badge>
-              </div>
-              <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                <StatusMotion
-                  uiState={conversation.uiState}
-                  agentStatus={conversation.agentStatus}
-                  preferredMode={conversation.preferredMode}
-                />
-                <span>{getStatusHint(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}</span>
+                  <span>{getStatusHint(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}</span>
+                </div>
               </div>
               <div className="flex items-end gap-2">
                 <Textarea
                   ref={inputRef}
                   value={conversation.composerValue}
-                  onFocus={() => setShowInlineEditor(false)}
+                  onFocus={() => {
+                    setShowInlineEditor(false);
+                    setComposerFocused(true);
+                  }}
+                  onBlur={() => setComposerFocused(false)}
                   onChange={(event) => {
                     conversation.setComposerValue(event.target.value);
                     conversation.sendTypingActivity();
@@ -546,19 +427,25 @@ export default function ChatPage() {
                     }
                   }}
                   placeholder="Type here. Press Enter to send, or use Speak for voice."
-                  className="min-h-[44px] max-h-[112px] resize-none"
+                  className={`resize-none transition-all duration-200 ${composerFocused ? "min-h-[42px] max-h-[96px]" : "min-h-[44px] max-h-[112px]"}`}
                   data-testid="input-chat"
                   rows={1}
                 />
                 <Button
                   type="button"
-                  variant={conversation.preferredMode === "voice" ? "default" : "outline"}
+                  variant={canPauseVoice ? "secondary" : conversation.preferredMode === "voice" ? "default" : "outline"}
                   className="shrink-0"
-                  onClick={() => void conversation.startConversation("voice")}
+                  onClick={() => {
+                    if (canPauseVoice) {
+                      void conversation.pauseConversation();
+                      return;
+                    }
+                    void conversation.startConversation("voice");
+                  }}
                   data-testid="button-speak"
                 >
-                  <Mic className="mr-2 h-4 w-4" />
-                  Speak
+                  {canPauseVoice ? <PauseCircle className="mr-2 h-4 w-4" /> : <Mic className="mr-2 h-4 w-4" />}
+                  {canPauseVoice ? "Pause" : "Speak"}
                 </Button>
                 <Button
                   className="shrink-0"
@@ -597,7 +484,7 @@ export default function ChatPage() {
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="border-t border-border/70 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div className="app-scrollbar max-h-[28vh] overflow-y-auto">
+                  <div className="app-scrollbar max-h-[36vh] overflow-y-auto transition-all duration-200">
                     <ChatInlineEditor
                       embedded
                       formSessionId={formSessionId}
