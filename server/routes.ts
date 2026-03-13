@@ -720,6 +720,8 @@ export async function registerRoutes(
         section: body.message.section ?? session.currentSection,
         modality: body.message.modality,
         conversationId: body.message.conversationId,
+        eventId: body.message.eventId,
+        transcriptKind: body.message.transcriptKind,
       };
       await persistTranscriptMessageIfMissing(session.id, message);
       return res.status(201).json({ success: true });

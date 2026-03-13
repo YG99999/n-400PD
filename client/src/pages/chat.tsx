@@ -13,7 +13,14 @@ import { useTheme } from "@/lib/theme";
 import { useToast } from "@/hooks/use-toast";
 import { authenticatedFetch, queryClient } from "@/lib/queryClient";
 import { useElevenLabsConversation } from "@/hooks/use-elevenlabs-conversation";
-import type { AgentStatus, ChatMessage, ConversationState, ReadinessStatus, Section, WorkflowState } from "@shared/schema";
+import type {
+  AgentStatus,
+  ChatMessage,
+  ConversationState,
+  ReadinessStatus,
+  Section,
+  WorkflowState,
+} from "@shared/schema";
 import { SECTIONS, SECTION_LABELS } from "@shared/schema";
 import {
   ArrowRight,
@@ -34,50 +41,133 @@ import {
   Volume2,
 } from "lucide-react";
 
+const MISSING_FIELD_LABELS: Record<string, string> = {
+  "personalInfo.fullName": "Your full legal name",
+  "personalInfo.firstName": "Your first name",
+  "personalInfo.lastName": "Your last name",
+  "personalInfo.dateOfBirth": "Your date of birth",
+  "personalInfo.aNumber": "Your A-Number",
+  "personalInfo.dateBecamePR": "The date you became a permanent resident",
+  "personalInfo.countryOfBirth": "Your country of birth",
+  "personalInfo.nationality": "Your current nationality",
+  "personalInfo.gender": "The gender listed on your application",
+  "personalInfo.email": "Your email address",
+  "personalInfo.phone": "Your daytime phone number",
+  "personalInfo.eligibilityBasis": "How you qualify to apply for citizenship",
+  "biographic.ethnicity": "Your ethnicity",
+  "biographic.race": "Your race",
+  "biographic.heightFeet": "Your height",
+  "biographic.heightInches": "Your height",
+  "biographic.weightLbs": "Your weight",
+  "biographic.eyeColor": "Your eye color",
+  "biographic.hairColor": "Your hair color",
+  "residenceHistory[0].address": "Your current street address",
+  "residenceHistory[0].city": "Your current city",
+  "residenceHistory[0].state": "Your current state",
+  "residenceHistory[0].zip": "Your current ZIP code",
+  "residenceHistory[0].country": "Your current country",
+  "residenceHistory[0].moveInDate": "When you moved to your current address",
+  "family.maritalStatus": "Your current marital status",
+  "family.timesMarried": "How many times you have been married",
+  "family.spouse.fullName": "Your spouse's full name",
+  "family.spouse.dateOfBirth": "Your spouse's date of birth",
+  "family.spouse.dateOfMarriage": "The date of your current marriage",
+  "family.totalChildren": "How many children you have",
+  employment: "Your work or school history",
+  travelHistory: "Your trips outside the United States",
+  "moralCharacter.claimedUSCitizen": "Whether you have ever claimed to be a U.S. citizen",
+  "moralCharacter.votedInElection": "Whether you have ever voted in a U.S. election",
+  "moralCharacter.arrestedOrDetained": "Whether you have ever been arrested or detained",
+  "moralCharacter.convictedOfCrime": "Whether you have ever been convicted of a crime",
+  "moralCharacter.usedIllegalDrugs": "Whether you have ever used illegal drugs",
+  "moralCharacter.militaryService": "Your military service history",
+  "moralCharacter.registeredSelectiveService": "Your Selective Service registration status",
+  "oath.supportConstitution": "Whether you support the Constitution",
+  "oath.willingTakeOath": "Whether you are willing to take the oath",
+  "oath.willingBearArms": "Whether you are willing to bear arms if required",
+  "oath.willingNoncombatService": "Whether you are willing to do noncombat service if required",
+  "oath.willingNationalService": "Whether you are willing to do work of national importance if required",
+};
+
+function humanizeMissingField(field: string) {
+  if (MISSING_FIELD_LABELS[field]) {
+    return MISSING_FIELD_LABELS[field];
+  }
+
+  const withoutIndex = field.replace(/\[\d+\]/g, "");
+  if (MISSING_FIELD_LABELS[withoutIndex]) {
+    return MISSING_FIELD_LABELS[withoutIndex];
+  }
+
+  const label = withoutIndex
+    .split(".")
+    .slice(-1)[0]
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (value) => value.toUpperCase());
+
+  return `Your ${label.toLowerCase()}`;
+}
+
 function getStatusLabel(status: AgentStatus, mode: "voice" | "text") {
   if (mode === "text" && (status === "ready" || status === "listening")) {
-    return "Text mode";
+    return "Waiting for your message";
   }
 
   switch (status) {
     case "connecting":
-      return "Connecting";
+      return "Getting ready";
     case "reconnecting":
       return "Reconnecting";
     case "listening":
-      return "Listening";
+      return "Listening to your answer";
     case "thinking":
-      return "Thinking";
+      return "Thinking about what you said";
     case "speaking":
-      return "Speaking";
+      return mode === "text" ? "Writing a reply" : "Asking your next question";
     case "error":
-      return "Needs attention";
+      return "Needs a quick retry";
     case "ready":
-      return "Ready";
+      return mode === "text" ? "Ready to chat" : "Your guide is ready";
     default:
-      return "Idle";
+      return "Ready";
   }
 }
 
 function getConnectionLabel(state: ConversationState, mode: "voice" | "text") {
   switch (state) {
     case "bootstrapping":
-      return "Bootstrapping";
+      return "Preparing your conversation";
     case "connecting_voice":
-      return "Connecting voice";
+      return "Starting voice";
     case "connecting_text":
-      return "Connecting text";
+      return "Opening chat";
     case "connected_voice":
-      return mode === "text" ? "Voice connected" : "Voice live";
+      return mode === "text" ? "Voice paused" : "Voice is on";
     case "connected_text":
-      return "Text live";
+      return "Text only";
     case "degraded":
-      return "Voice unavailable";
+      return "Using text for now";
     case "error":
-      return "Connection error";
+      return "Connection issue";
     default:
-      return "Idle";
+      return "Not connected";
   }
+}
+
+function getConversationHint(state: ConversationState, mode: "voice" | "text") {
+  if (state === "connected_text" || mode === "text") {
+    return "Type your answer below. Replies will stay on screen and won't play out loud.";
+  }
+  if (state === "connected_voice") {
+    return "Your guide will lead with the next question, and you can answer by voice or switch to typing anytime.";
+  }
+  if (state === "connecting_voice" || state === "connecting_text" || state === "bootstrapping") {
+    return "Your guide is getting the conversation ready.";
+  }
+  if (state === "degraded" || state === "error") {
+    return "If voice has trouble, you can keep going by typing right away.";
+  }
+  return "Your guide will ask one clear question at a time and keep the conversation easy to follow.";
 }
 
 export default function ChatPage() {
@@ -142,8 +232,13 @@ export default function ChatPage() {
   }, [conversation, workflowState?.pendingRedirect]);
 
   const transcript = useMemo(
-    () => conversation.transcript.length > 0 ? conversation.transcript : messages,
+    () => (conversation.transcript.length > 0 ? conversation.transcript : messages),
     [conversation.transcript, messages],
+  );
+
+  const missingFieldLabels = useMemo(
+    () => (readiness?.missingFields ?? []).map(humanizeMissingField),
+    [readiness?.missingFields],
   );
 
   if (!user || !formSessionId) return null;
@@ -211,7 +306,7 @@ export default function ChatPage() {
                 </p>
               </div>
               <Badge variant={readiness?.eligibleForReview ? "default" : "secondary"}>
-                {readiness?.eligibleForReview ? "Ready for review" : "Collecting info"}
+                {readiness?.eligibleForReview ? "Ready for review" : "Still gathering details"}
               </Badge>
             </div>
             <Progress value={progressPercent} className="mt-4 h-2" data-testid="progress-bar" />
@@ -237,14 +332,14 @@ export default function ChatPage() {
           <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Conversation</p>
+                <p className="text-sm font-medium">Your guide</p>
                 <p className="text-xs text-muted-foreground">
-                  {conversation.preferredMode === "voice" ? "Talk naturally or switch to typing" : "Text-only mode is active"}
+                  {getConversationHint(conversation.conversationState, conversation.preferredMode)}
                 </p>
               </div>
               <Badge variant="outline" className="gap-1">
                 {conversation.agentStatus === "speaking" ? <Volume2 className="h-3 w-3" /> : <Radio className="h-3 w-3" />}
-                {getConnectionLabel(conversation.conversationState, conversation.preferredMode)} · {getStatusLabel(conversation.agentStatus, conversation.preferredMode)}
+                {getConnectionLabel(conversation.conversationState, conversation.preferredMode)} / {getStatusLabel(conversation.agentStatus, conversation.preferredMode)}
               </Badge>
             </div>
 
@@ -256,9 +351,9 @@ export default function ChatPage() {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <p className="font-medium">Start by voice</p>
+                      <p className="font-medium">Your guide is ready to begin</p>
                       <p className="text-sm text-muted-foreground">
-                        We will ask one question at a time and keep a live transcript on screen.
+                        Start with voice if you want a spoken walkthrough, or type if that feels easier right now.
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -296,7 +391,7 @@ export default function ChatPage() {
                     data-testid="button-mode-text"
                   >
                     <Keyboard className="mr-2 h-4 w-4" />
-                    Switch to typing
+                    Typing mode
                   </Button>
                 </div>
                 <Button variant="ghost" className="w-full justify-start" onClick={() => void conversation.endConversation()}>
@@ -320,7 +415,7 @@ export default function ChatPage() {
 
             {conversation.error ? (
               <Alert className="mt-4" variant="destructive">
-                <AlertTitle>Session issue</AlertTitle>
+                <AlertTitle>Conversation issue</AlertTitle>
                 <AlertDescription>{conversation.error}</AlertDescription>
               </Alert>
             ) : null}
@@ -329,10 +424,12 @@ export default function ChatPage() {
           <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">What still needs to be collected</p>
-                <p className="text-xs text-muted-foreground">We keep this visible so the agent and the user stay aligned.</p>
+                <p className="text-sm font-medium">What we still need from you</p>
+                <p className="text-xs text-muted-foreground">
+                  We keep this short so you always know the next important details to finish.
+                </p>
               </div>
-              {(readiness?.missingFields.length || 0) > 3 ? (
+              {missingFieldLabels.length > 3 ? (
                 <Button
                   size="sm"
                   variant="ghost"
@@ -343,12 +440,12 @@ export default function ChatPage() {
               ) : null}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              {(readiness?.missingFields.length || 0) > 0 ? (
-                (conversation.isMissingFieldsExpanded ? readiness?.missingFields : readiness?.missingFields.slice(0, 4))?.map((field) => (
+              {missingFieldLabels.length > 0 ? (
+                (conversation.isMissingFieldsExpanded ? missingFieldLabels : missingFieldLabels.slice(0, 4)).map((field) => (
                   <Badge key={field} variant="secondary">{field}</Badge>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">Core supported applicant details are currently covered.</p>
+                <p className="text-sm text-muted-foreground">You have already covered the main details we need right now.</p>
               )}
             </div>
           </section>
@@ -358,12 +455,14 @@ export default function ChatPage() {
           <div className="border-b border-border/70 px-5 py-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">Live transcript</p>
-                <p className="text-xs text-muted-foreground">Voice stays primary, but the keyboard is always available.</p>
+                <p className="text-sm font-medium">Conversation</p>
+                <p className="text-xs text-muted-foreground">
+                  Everything you say and everything your guide says will appear here.
+                </p>
               </div>
               <Badge variant="outline" className="gap-1">
                 {conversation.preferredMode === "voice" ? <Mic className="h-3 w-3" /> : <Keyboard className="h-3 w-3" />}
-                {conversation.preferredMode === "voice" ? "Voice-first" : "Typing"}
+                {conversation.preferredMode === "voice" ? "Voice conversation" : "Typing only"}
               </Badge>
             </div>
           </div>
@@ -373,10 +472,10 @@ export default function ChatPage() {
               <Alert>
                 <ClipboardCheck className="h-4 w-4" />
                 <AlertTitle>
-                  {workflowState?.mode === "post_payment_review" ? "Post-payment edit mode" : "Review edit mode"}
+                  {workflowState?.mode === "post_payment_review" ? "Post-payment edits" : "Review changes"}
                 </AlertTitle>
                 <AlertDescription>
-                  The assistant keeps your current application intact and only updates the corrections you ask for.
+                  Your guide will keep the rest of your application in place and only change what you ask to fix.
                 </AlertDescription>
               </Alert>
             </div>
@@ -394,8 +493,12 @@ export default function ChatPage() {
                 ) : transcript.length === 0 ? (
                   <div className="flex min-h-[320px] flex-col items-center justify-center text-center text-muted-foreground">
                     <MessageSquare className="mb-4 h-12 w-12 opacity-30" />
-                    <p className="text-base">Your transcript will appear here as soon as the conversation starts.</p>
-                    <p className="mt-2 text-sm">You can talk first or start directly in text mode.</p>
+                    <p className="text-base">
+                      {conversation.isConnected ? "Your guide is getting the first question ready." : "Your conversation will appear here as soon as you begin."}
+                    </p>
+                    <p className="mt-2 text-sm">
+                      {conversation.isConnected ? "Stay on this page and your guide will lead the next step." : "You can start by voice or jump straight into typing."}
+                    </p>
                   </div>
                 ) : (
                   transcript.map((message) => (
@@ -412,8 +515,7 @@ export default function ChatPage() {
                         }`}
                       >
                         <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] opacity-70">
-                          <span>{message.role === "user" ? "You" : "CitizenFlow"}</span>
-                          {message.modality ? <span>{message.modality}</span> : null}
+                          <span>{message.role === "user" ? "You" : "Your guide"}</span>
                         </div>
                         {message.content.split("\n").map((line, index) => (
                           <p key={`${message.id}-${index}`} className={index > 0 ? "mt-2" : ""}>{line}</p>
@@ -431,8 +533,8 @@ export default function ChatPage() {
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">
                   {conversation.preferredMode === "voice"
-                    ? "Voice is active. You can interrupt the handoff countdown by speaking or typing."
-                    : "Typing uses the same ElevenLabs conversation so context stays intact."}
+                    ? "Voice is on. You can still type anytime if that feels easier."
+                    : "Typing mode is on. Replies will stay on screen until you switch back to voice."}
                 </p>
                 {conversation.conversationState === "bootstrapping" || conversation.conversationState === "connecting_voice" || conversation.conversationState === "connecting_text"
                   ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -466,7 +568,7 @@ export default function ChatPage() {
                       void conversation.sendMessage();
                     }
                   }}
-                  placeholder={inReviewContext ? "Describe the correction you want to make..." : "Type here if you prefer the keyboard"}
+                  placeholder={inReviewContext ? "Describe the change you want to make..." : "Type your answer here"}
                   className="min-h-[50px] max-h-[140px] resize-none"
                   data-testid="input-chat"
                   rows={1}

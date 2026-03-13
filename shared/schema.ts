@@ -300,6 +300,8 @@ export interface ChatMessage {
   toolEvents?: ToolEvent[];
   modality?: ConversationMode;
   conversationId?: string;
+  eventId?: number;
+  transcriptKind?: "voice_user" | "text_user" | "assistant";
 }
 
 export interface ElevenLabsSessionDebug {
@@ -376,6 +378,8 @@ export const elevenLabsTranscriptMessageSchema = z.object({
   section: z.enum(SECTIONS).optional(),
   modality: z.enum(["voice", "text"]).default("voice"),
   conversationId: z.string().optional(),
+  eventId: z.number().int().optional(),
+  transcriptKind: z.enum(["voice_user", "text_user", "assistant"]).optional(),
 });
 
 export const elevenLabsTranscriptPersistRequestSchema = z.object({
