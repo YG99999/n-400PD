@@ -21,10 +21,17 @@ export function setupSecurity(app: Express) {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("Permissions-Policy", "microphone=(), camera=(), geolocation=()");
+    res.setHeader("Permissions-Policy", "microphone=(self), camera=(), geolocation=()");
     res.setHeader(
       "Content-Security-Policy",
-      "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.openai.com https://*.supabase.co https://api.stripe.com;",
+      [
+        "default-src 'self'",
+        "img-src 'self' data: https:",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "script-src 'self' 'unsafe-inline'",
+        "font-src 'self' https://fonts.gstatic.com",
+        "connect-src 'self' https://api.openai.com https://*.supabase.co https://api.stripe.com https://api.elevenlabs.io https://livekit.rtc.elevenlabs.io wss://api.elevenlabs.io wss://livekit.rtc.elevenlabs.io",
+      ].join("; ") + ";",
     );
     next();
   });
