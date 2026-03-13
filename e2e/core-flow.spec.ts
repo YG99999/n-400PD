@@ -2,13 +2,14 @@ import { test, expect } from "@playwright/test";
 
 test("demo user can use chat, review, payment, regenerate, and download through the UI", async ({ page }) => {
   const openTextMode = async () => {
-    const resumeButton = page.getByTestId("button-resume-text");
-    const startButton = page.getByTestId("button-start-text");
-    if (await resumeButton.count()) {
-      await resumeButton.click();
-      return;
+    const input = page.getByTestId("input-chat");
+    await expect(input).toBeVisible();
+    if (await input.isDisabled()) {
+      const voiceButton = page.getByTestId("button-resume-voice");
+      if (await voiceButton.count()) {
+        await voiceButton.click();
+      }
     }
-    await startButton.click();
   };
 
   await page.goto("/#/");

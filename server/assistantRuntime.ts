@@ -34,6 +34,7 @@ interface AssistantTurnResult {
 }
 
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const BACKEND_ONLY_TOOLS = new Set(["transition_to_payment"]);
 
 export interface AssistantToolExecutionResult {
@@ -44,23 +45,47 @@ export interface AssistantToolExecutionResult {
   updatedFormData: N400FormData;
 }
 
+interface LlmProviderConfig {
+  name: "openai" | "gemini";
+  endpoint: string;
+  apiKey: string;
+  model: string;
+}
+
 export async function processAssistantTurn(
   session: FormSession,
   userMessage: string,
 ): Promise<AssistantTurnResult> {
-  if (!process.env.OPENAI_API_KEY) {
+  const provider: LlmProviderConfig | null = process.env.GEMINI_API_KEY
+    ? {
+        name: "gemini",
+        endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        apiKey: process.env.GEMINI_API_KEY,
+        model: GEMINI_MODEL,
+      }
+    : process.env.OPENAI_API_KEY
+      ? {
+          name: "openai",
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: process.env.OPENAI_API_KEY,
+          model: OPENAI_MODEL,
+        }
+      : null;
+
+  if (!provider) {
     return runFallbackAssistantTurn(session, userMessage);
   }
 
   try {
-    return await runOpenAiAssistantTurn(session, userMessage);
+    return await runToolCallingAssistantTurn(provider, session, userMessage);
   } catch (error) {
-    console.error("Assistant runtime failed, falling back to local engine:", error);
+    console.error(`Assistant runtime (${provider.name}) failed, falling back to local engine:`, error);
     return runFallbackAssistantTurn(session, userMessage);
   }
 }
 
-async function runOpenAiAssistantTurn(
+async function runToolCallingAssistantTurn(
+  provider: LlmProviderConfig,
   session: FormSession,
   userMessage: string,
 ): Promise<AssistantTurnResult> {
@@ -184,14 +209,14 @@ async function runOpenAiAssistantTurn(
   ];
 
   for (let attempt = 0; attempt < 6; attempt++) {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(provider.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${provider.apiKey}`,
       },
       body: JSON.stringify({
-        model: OPENAI_MODEL,
+        model: provider.model,
         temperature: 0.2,
         messages,
         tools,

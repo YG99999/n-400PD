@@ -935,6 +935,8 @@ export async function registerRoutes(
 
       return res.json({
         botResponse: result.botMessage,
+        userMessage: userMsg,
+        assistantMessage: botMsg,
         extractedFields: result.extractedFields,
         currentSection: result.currentSection,
         mode: nextWorkflowState.mode,

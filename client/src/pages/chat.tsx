@@ -28,7 +28,6 @@ import {
   ArrowDown,
   ArrowRight,
   ChevronDown,
-  Keyboard,
   Loader2,
   LogOut,
   MessageSquare,
@@ -147,6 +146,19 @@ function StatusMotion({ uiState, agentStatus, preferredMode }: {
       <span className={`h-2 w-2 rounded-full ${isListening ? "animate-bounce bg-primary/60 [animation-delay:240ms]" : "animate-pulse bg-primary/60"}`} />
     </span>
   );
+}
+
+function getStatusHint(uiState: string, agentStatus: AgentStatus, preferredMode: "voice" | "text") {
+  if (uiState === "starting_voice") return "Connecting voice now.";
+  if (uiState === "switching_voice") return "Switching back to voice.";
+  if (uiState === "switching_text") return "Switching to typing.";
+  if (uiState === "starting_text") return "Preparing typing mode.";
+  if (uiState === "error_recoverable") return "Trying to recover the conversation.";
+  if (preferredMode === "voice" && agentStatus === "listening") return "Listening now. You can start talking.";
+  if (preferredMode === "voice" && agentStatus === "speaking") return "Your guide is speaking.";
+  if (agentStatus === "thinking") return "Working on the next response.";
+  if (preferredMode === "text") return "Type your answer and press Enter to send.";
+  return "Your conversation will keep its place.";
 }
 
 export default function ChatPage() {
@@ -353,10 +365,6 @@ export default function ChatPage() {
                         <Mic className="mr-2 h-4 w-4" />
                         {conversation.uiState === "entry" ? "Talk with guide" : "Resume by voice"}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => void conversation.startConversation("text")} data-testid={conversation.uiState === "entry" ? "button-start-text" : "button-resume-text"}>
-                        <Keyboard className="mr-2 h-4 w-4" />
-                        {conversation.uiState === "entry" ? "Type instead" : "Resume by typing"}
-                      </Button>
                     </>
                   ) : null}
 
@@ -365,10 +373,6 @@ export default function ChatPage() {
                       <Button size="sm" onClick={() => void conversation.startConversation("voice")} data-testid="button-retry-voice">
                         <Mic className="mr-2 h-4 w-4" />
                         Retry voice
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => void conversation.startConversation("text")} data-testid="button-retry-text">
-                        <Keyboard className="mr-2 h-4 w-4" />
-                        Keep typing
                       </Button>
                     </>
                   ) : null}
@@ -395,24 +399,6 @@ export default function ChatPage() {
                     || conversation.uiState === "switching_voice"
                     || conversation.uiState === "switching_text") ? (
                     <>
-                      <Button
-                        size="sm"
-                        variant={conversation.preferredMode === "voice" ? "default" : "outline"}
-                        onClick={() => void conversation.switchMode("voice")}
-                        data-testid="button-mode-voice"
-                      >
-                        <Mic className="mr-2 h-4 w-4" />
-                        Voice
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={conversation.preferredMode === "text" ? "default" : "outline"}
-                        onClick={() => void conversation.switchMode("text")}
-                        data-testid="button-mode-text"
-                      >
-                        <Keyboard className="mr-2 h-4 w-4" />
-                        Typing
-                      </Button>
                       <Button size="sm" variant="ghost" onClick={() => void conversation.pauseConversation()} data-testid="button-pause-chat">
                         <PauseCircle className="mr-2 h-4 w-4" />
                         Pause chat
@@ -536,6 +522,14 @@ export default function ChatPage() {
                   {getStatusLabel(conversation.agentStatus, conversation.uiState, conversation.preferredMode)}
                 </Badge>
               </div>
+              <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                <StatusMotion
+                  uiState={conversation.uiState}
+                  agentStatus={conversation.agentStatus}
+                  preferredMode={conversation.preferredMode}
+                />
+                <span>{getStatusHint(conversation.uiState, conversation.agentStatus, conversation.preferredMode)}</span>
+              </div>
               <div className="flex items-end gap-2">
                 <Textarea
                   ref={inputRef}
@@ -550,11 +544,21 @@ export default function ChatPage() {
                       void conversation.sendMessage();
                     }
                   }}
-                  placeholder="Type your answer here"
+                  placeholder="Type here. Press Enter to send, or use Speak for voice."
                   className="min-h-[44px] max-h-[112px] resize-none"
                   data-testid="input-chat"
                   rows={1}
                 />
+                <Button
+                  type="button"
+                  variant={conversation.preferredMode === "voice" ? "default" : "outline"}
+                  className="shrink-0"
+                  onClick={() => void conversation.startConversation("voice")}
+                  data-testid="button-speak"
+                >
+                  <Mic className="mr-2 h-4 w-4" />
+                  Speak
+                </Button>
                 <Button
                   className="shrink-0"
                   onClick={() => void conversation.sendMessage()}
