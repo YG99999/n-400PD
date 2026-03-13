@@ -42,6 +42,8 @@ export const config = {
   elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID || "",
   elevenLabsWebhookSecret: process.env.ELEVENLABS_WEBHOOK_SECRET || "",
   elevenLabsServerLocation: process.env.ELEVENLABS_SERVER_LOCATION || "us",
+  elevenLabsDebugBootstrap: toBoolean(process.env.ELEVENLABS_DEBUG_BOOTSTRAP, !production),
+  elevenLabsExperimentalWebrtc: toBoolean(process.env.ELEVENLABS_EXPERIMENTAL_WEBRTC, false),
 };
 
 export function assertProductionReadiness() {

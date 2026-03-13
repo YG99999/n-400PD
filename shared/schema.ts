@@ -246,6 +246,15 @@ export interface ToolEvent {
 }
 
 export type ConversationMode = "voice" | "text";
+export type ConversationState =
+  | "idle"
+  | "bootstrapping"
+  | "connecting_voice"
+  | "connecting_text"
+  | "connected_voice"
+  | "connected_text"
+  | "degraded"
+  | "error";
 export type AgentStatus =
   | "idle"
   | "connecting"
@@ -291,6 +300,15 @@ export interface ChatMessage {
   toolEvents?: ToolEvent[];
   modality?: ConversationMode;
   conversationId?: string;
+}
+
+export interface ElevenLabsSessionDebug {
+  transport: "websocket" | "webrtc";
+  serverLocation: string;
+  agentId: string;
+  signedUrlPresent: boolean;
+  conversationTokenPresent: boolean;
+  dynamicVariableKeys: string[];
 }
 
 // ── Form session ──

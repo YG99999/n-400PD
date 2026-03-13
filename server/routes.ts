@@ -42,9 +42,7 @@ import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
 import { summarizeScope } from "./assistantCatalog";
 import {
-  buildElevenLabsAgentPrompt,
   buildElevenLabsDynamicVariables,
-  buildElevenLabsFirstMessage,
   createElevenLabsConversationToken,
   createElevenLabsSignedUrl,
   mapTranscriptMessage,
@@ -558,14 +556,27 @@ export async function registerRoutes(
         ...session,
         workflowState,
       };
+      const correlationId = randomUUID();
+      const signedUrl = await createElevenLabsSignedUrl();
+      const conversationToken = config.elevenLabsExperimentalWebrtc
+        ? await createElevenLabsConversationToken()
+        : undefined;
+      const dynamicVariables = buildElevenLabsDynamicVariables(refreshedSession, requestUser);
 
-      const [conversationToken, signedUrl] = await Promise.all([
-        createElevenLabsConversationToken(),
-        createElevenLabsSignedUrl(),
-      ]);
+      console.info("ElevenLabs session bootstrap created", {
+        correlationId,
+        formSessionId: refreshedSession.id,
+        requestedMode: body.mode ?? "voice",
+        transport: "websocket",
+        serverLocation: config.elevenLabsServerLocation,
+        hasConversationToken: Boolean(conversationToken),
+      });
+
       return res.json({
         conversationToken,
         signedUrl,
+        transport: "websocket",
+        correlationId,
         serverLocation: config.elevenLabsServerLocation,
         agentId: config.elevenLabsAgentId,
         formSessionId: refreshedSession.id,
@@ -575,13 +586,59 @@ export async function registerRoutes(
         missingFields: refreshedSession.workflowState.lastReadiness?.missingFields ?? [],
         supportedScopeSummary: JSON.stringify(summarizeScope(refreshedSession.formData)),
         existingTranscript: refreshedSession.messages.map(mapTranscriptMessage),
-        prompt: buildElevenLabsAgentPrompt(refreshedSession, requestUser),
-        firstMessage: buildElevenLabsFirstMessage(refreshedSession),
-        dynamicVariables: buildElevenLabsDynamicVariables(refreshedSession, requestUser),
+        dynamicVariables,
         preferredMode: body.mode ?? "voice",
+        debug: config.elevenLabsDebugBootstrap ? {
+          transport: "websocket",
+          serverLocation: config.elevenLabsServerLocation,
+          agentId: config.elevenLabsAgentId,
+          signedUrlPresent: Boolean(signedUrl),
+          conversationTokenPresent: Boolean(conversationToken),
+          dynamicVariableKeys: Object.keys(dynamicVariables),
+        } : undefined,
       });
     } catch (err: any) {
       return res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/elevenlabs/health", requireAuth, async (_req, res) => {
+    try {
+      const status = getElevenLabsConfigStatus();
+      if (!status.configured) {
+        return res.status(503).json({
+          ok: false,
+          configured: false,
+          missing: status.missing,
+          serverLocation: config.elevenLabsServerLocation,
+          agentId: config.elevenLabsAgentId || null,
+        });
+      }
+
+      const signedUrl = await createElevenLabsSignedUrl();
+      const conversationToken = config.elevenLabsExperimentalWebrtc
+        ? await createElevenLabsConversationToken()
+        : undefined;
+
+      return res.json({
+        ok: true,
+        configured: true,
+        preferredTransport: "websocket",
+        agentId: config.elevenLabsAgentId,
+        serverLocation: config.elevenLabsServerLocation,
+        signedUrlPresent: Boolean(signedUrl),
+        conversationTokenPresent: Boolean(conversationToken),
+        experimentalWebrtcEnabled: config.elevenLabsExperimentalWebrtc,
+      });
+    } catch (err: any) {
+      return res.status(503).json({
+        ok: false,
+        configured: true,
+        error: err.message,
+        preferredTransport: "websocket",
+        agentId: config.elevenLabsAgentId,
+        serverLocation: config.elevenLabsServerLocation,
+      });
     }
   });
 

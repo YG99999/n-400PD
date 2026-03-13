@@ -13,7 +13,7 @@ import { useTheme } from "@/lib/theme";
 import { useToast } from "@/hooks/use-toast";
 import { authenticatedFetch, queryClient } from "@/lib/queryClient";
 import { useElevenLabsConversation } from "@/hooks/use-elevenlabs-conversation";
-import type { AgentStatus, ChatMessage, ReadinessStatus, Section, WorkflowState } from "@shared/schema";
+import type { AgentStatus, ChatMessage, ConversationState, ReadinessStatus, Section, WorkflowState } from "@shared/schema";
 import { SECTIONS, SECTION_LABELS } from "@shared/schema";
 import {
   ArrowRight,
@@ -54,6 +54,27 @@ function getStatusLabel(status: AgentStatus, mode: "voice" | "text") {
       return "Needs attention";
     case "ready":
       return "Ready";
+    default:
+      return "Idle";
+  }
+}
+
+function getConnectionLabel(state: ConversationState, mode: "voice" | "text") {
+  switch (state) {
+    case "bootstrapping":
+      return "Bootstrapping";
+    case "connecting_voice":
+      return "Connecting voice";
+    case "connecting_text":
+      return "Connecting text";
+    case "connected_voice":
+      return mode === "text" ? "Voice connected" : "Voice live";
+    case "connected_text":
+      return "Text live";
+    case "degraded":
+      return "Voice unavailable";
+    case "error":
+      return "Connection error";
     default:
       return "Idle";
   }
@@ -223,7 +244,7 @@ export default function ChatPage() {
               </div>
               <Badge variant="outline" className="gap-1">
                 {conversation.agentStatus === "speaking" ? <Volume2 className="h-3 w-3" /> : <Radio className="h-3 w-3" />}
-                {getStatusLabel(conversation.agentStatus, conversation.preferredMode)}
+                {getConnectionLabel(conversation.conversationState, conversation.preferredMode)} · {getStatusLabel(conversation.agentStatus, conversation.preferredMode)}
               </Badge>
             </div>
 
@@ -249,6 +270,11 @@ export default function ChatPage() {
                         <Keyboard className="mr-2 h-4 w-4" />
                         Start in text mode
                       </Button>
+                      {(conversation.conversationState === "degraded" || conversation.conversationState === "error") ? (
+                        <Button variant="ghost" onClick={() => void conversation.startConversation("voice")}>
+                          Retry voice
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -289,6 +315,13 @@ export default function ChatPage() {
                 <AlertDescription>
                   Speak or type anything to stay here and cancel the automatic handoff.
                 </AlertDescription>
+              </Alert>
+            ) : null}
+
+            {conversation.error ? (
+              <Alert className="mt-4" variant="destructive">
+                <AlertTitle>Session issue</AlertTitle>
+                <AlertDescription>{conversation.error}</AlertDescription>
               </Alert>
             ) : null}
           </section>
@@ -401,7 +434,9 @@ export default function ChatPage() {
                     ? "Voice is active. You can interrupt the handoff countdown by speaking or typing."
                     : "Typing uses the same ElevenLabs conversation so context stays intact."}
                 </p>
-                {conversation.status === "connecting" ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+                {conversation.conversationState === "bootstrapping" || conversation.conversationState === "connecting_voice" || conversation.conversationState === "connecting_text"
+                  ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  : null}
               </div>
 
               <div className="flex items-end gap-2">
