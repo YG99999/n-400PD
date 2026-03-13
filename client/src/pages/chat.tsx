@@ -491,7 +491,7 @@ export default function ChatPage() {
               <Button
                 size="sm"
                 variant="secondary"
-                className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full shadow-lg"
+                className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full border border-border/70 bg-background/95 shadow-lg"
                 onClick={() => {
                   setStickToBottom(true);
                   scrollToBottom();
@@ -534,6 +534,7 @@ export default function ChatPage() {
                 <Textarea
                   ref={inputRef}
                   value={conversation.composerValue}
+                  onFocus={() => setShowInlineEditor(false)}
                   onChange={(event) => {
                     conversation.setComposerValue(event.target.value);
                     conversation.sendTypingActivity();
