@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import type { StoredUser } from "./storage";
 import type { ChatMessage, FormSession } from "@shared/schema";
 import { buildFieldCatalogPrompt, getSectionPrompt, summarizeScope } from "./assistantCatalog";
-import { config, isElevenLabsConfigured } from "./config";
+import { config, getElevenLabsConfigStatus } from "./config";
 import { getInitialMessage } from "./conversation";
 
 interface ElevenLabsConversationTokenResponse {
@@ -74,8 +74,9 @@ export function buildElevenLabsDynamicVariables(session: FormSession, user?: Sto
 }
 
 export async function createElevenLabsConversationToken() {
-  if (!isElevenLabsConfigured()) {
-    throw new Error("ElevenLabs is not configured");
+  const status = getElevenLabsConfigStatus();
+  if (!status.configured) {
+    throw new Error(`ElevenLabs is not configured on the web service. Missing: ${status.missing.join(", ")}`);
   }
 
   const response = await fetch(

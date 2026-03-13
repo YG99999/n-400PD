@@ -37,7 +37,7 @@ import { rateLimit } from "./security";
 import { requireAdmin, requireAuth, type AuthenticatedRequest, resolveRequestUser } from "./auth";
 import { verifyPassword, hashPassword } from "./password";
 import { documentJobs } from "./documentJobs";
-import { canUseLocalStorage, config, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
+import { canUseLocalStorage, config, getElevenLabsConfigStatus, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
 import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
 import { summarizeScope } from "./assistantCatalog";
@@ -110,6 +110,12 @@ async function buildReadinessPayload() {
       detail: config.inlineDocumentProcessing
         ? "Inline document processing is enabled."
         : `Background worker polling every ${config.documentWorkerPollMs}ms.`,
+    },
+    elevenLabsConfigured: {
+      ok: getElevenLabsConfigStatus().configured,
+      detail: getElevenLabsConfigStatus().configured
+        ? `Agent ${config.elevenLabsAgentId} configured for ${config.elevenLabsServerLocation}.`
+        : `Missing ${getElevenLabsConfigStatus().missing.join(", ")} on the web service.`,
     },
     localStorageAllowed: {
       ok: canUseLocalStorage(),
@@ -532,6 +538,10 @@ export async function registerRoutes(
       const body = elevenLabsSessionRequestSchema.parse(req.body);
       const requestUser = await storage.getUser(userId);
       const session = await getAuthedUserSession(userId, body.formSessionId);
+      const elevenLabsStatus = getElevenLabsConfigStatus();
+      if (!elevenLabsStatus.configured) {
+        console.error("ElevenLabs session bootstrap failed:", elevenLabsStatus);
+      }
       const workflowState = refreshWorkflowState(session);
       await storage.updateSession(session.id, { workflowState });
       const refreshedSession = (await storage.getSession(session.id)) ?? {

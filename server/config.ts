@@ -90,3 +90,17 @@ export function canUseLocalStorage() {
 export function isElevenLabsConfigured() {
   return Boolean(config.elevenLabsApiKey && config.elevenLabsAgentId);
 }
+
+export function getElevenLabsConfigStatus() {
+  const missing: string[] = [];
+  if (!config.elevenLabsApiKey) missing.push("ELEVENLABS_API_KEY");
+  if (!config.elevenLabsAgentId) missing.push("ELEVENLABS_AGENT_ID");
+
+  return {
+    configured: missing.length === 0,
+    missing,
+    agentIdConfigured: Boolean(config.elevenLabsAgentId),
+    apiKeyConfigured: Boolean(config.elevenLabsApiKey),
+    serverLocation: config.elevenLabsServerLocation,
+  };
+}
