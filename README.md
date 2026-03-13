@@ -4,6 +4,13 @@ CitizenFlow is a production-shaped N-400 form-preparation app. It provides a gui
 
 CitizenFlow is not a law firm and does not provide legal advice.
 
+## Production runtime
+
+- Node `20.19.0` is required for the current Vite toolchain.
+- Build once with `npm run build`.
+- Start the web service with `npm start`.
+- Start the background worker with `npm run worker`.
+
 ## What is implemented
 
 - React + Express application with hash-based routing

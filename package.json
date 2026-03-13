@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": "20.19.0"
+  },
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
-    "worker": "NODE_ENV=production tsx server/worker.ts",
+    "worker": "NODE_ENV=production node dist/worker.cjs",
     "check": "tsc",
     "health:check": "tsx script/launch-readiness.ts",
     "test:mock-assistant-e2e": "tsx script/mock-assistant-e2e.ts",
