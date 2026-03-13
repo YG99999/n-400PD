@@ -118,7 +118,19 @@ function normalizeToolArguments(toolName: string, params: Record<string, unknown
     return params;
   }
 
-  const raw = typeof params.updatesJson === "string" ? params.updatesJson : "[]";
+  const directUpdates = Array.isArray(params.updates) ? params.updates : null;
+  if (directUpdates) {
+    return {
+      updates: directUpdates,
+      note: typeof params.note === "string" ? params.note : undefined,
+    };
+  }
+
+  const raw = typeof params.updatesJson === "string"
+    ? params.updatesJson
+    : typeof params.updates === "string"
+      ? params.updates
+      : "[]";
   try {
     const updates = JSON.parse(raw);
     return {

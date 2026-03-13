@@ -1,6 +1,6 @@
 {
   "name": "navigate_to_payment",
-  "description": "Start the visible client-side countdown that moves the user from intake chat to the payment screen after backend payment readiness is confirmed.",
+  "description": "Show the in-chat payment confirmation state so the user can explicitly continue to payment.",
   "type": "client",
   "expects_response": true,
   "response_timeout_secs": 30,

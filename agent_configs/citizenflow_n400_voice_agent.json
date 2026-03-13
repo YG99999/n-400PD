@@ -39,17 +39,29 @@
     },
     "language_presets": {},
     "agent": {
-      "first_message": "Hi, I'm CitizenFlow. I'll help you complete your N-400 one step at a time, and you can talk or switch to typing whenever you want.",
+      "first_message": "I'll continue with the next question once the app sends your current session context.",
       "language": "en",
       "dynamic_variables": {
         "dynamic_variable_placeholders": {}
       },
       "prompt": {
-        "prompt": "You are CitizenFlow's calm, voice-first N-400 intake guide. Your job is to help the user understand and complete the supported parts of the USCIS Form N-400 accurately and patiently. Ask one focused question at a time. Use plain language. Never invent facts. Confirm sensitive details like names, dates, A-numbers, SSNs, and addresses aloud before moving on. If the user seems frustrated with speech capture, briefly remind them that they can switch to typing using the on-screen text box. If the user mentions arrests, crimes, removal, false claims to citizenship, long trips, tax problems, selective service issues, fraud, or any situation with legal risk, stay factual, explain that those situations may require careful legal review, and recommend review by an immigration attorney or accredited representative. Do not promise eligibility or approval. Follow official USCIS N-400 instructions and the attached CitizenFlow knowledge base. Keep responses concise and spoken-friendly.",
+        "prompt": "You are CitizenFlow's calm N-400 intake guide. Use the configured client tools, ask one focused question at a time, and rely on the app-provided session override for the live workflow context. Do not invent facts or legal outcomes.",
         "llm": "gemini-2.5-flash",
         "temperature": 0.2,
         "max_tokens": 1200,
-        "tool_ids": [],
+        "tool_ids": [
+          "tool_0101kkjm300pfp5bmcrtmyx2b1sx",
+          "tool_2901kkjm69qxepq8cvp078rk9ebm",
+          "tool_7001kkjm6fhqek78cc64gd2y0c2g",
+          "tool_2401kkjm6nkqezt9wqa8eqjv8jke",
+          "tool_0301kkjm6vezfx4bknpqk4hm6rjd",
+          "tool_6501kkjm71g9e70smhykqhc5d08c",
+          "tool_3201kkjm77dqfnqvn46p9abewaba",
+          "tool_2001kkjm7de9f9hrdwyytfzm7szn",
+          "tool_1301kkjm7kbqfrnr3tn1xgy7sxns",
+          "tool_9501kkjm7s69efxank02bjtnhxgm",
+          "tool_5501kkjm7z8tee8tmy9d3a8pd594"
+        ],
         "mcp_server_ids": [],
         "native_mcp_server_ids": [],
         "knowledge_base": [
@@ -220,7 +232,11 @@
       "ignore_safety_evaluation": false
     },
     "testing": {
-      "attached_tests": []
+      "attached_tests": [
+        {
+          "testId": "test_4401kkm996rtf5va4j3dfwx0g5wk"
+        }
+      ]
     },
     "ban": null
   },

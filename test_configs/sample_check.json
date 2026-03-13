@@ -1,0 +1,36 @@
+{
+    "name": "citizenflow_field_collection_continuation",
+    "chat_history": [
+        {
+            "role": "user",
+            "time_in_call_secs": 1,
+            "message": "My first name is Jane, my last name is Doe, and I was born on April 12 1990."
+        }
+    ],
+    "success_condition": "The agent should acknowledge and continue the N-400 intake by asking the next concrete question after collecting the provided identity details. The response should not restart with a generic welcome, and it should stay focused on the next missing application detail.",
+    "success_examples": [
+        {
+            "response": "Thanks, Jane Doe. I have your date of birth as April 12, 1990. What is your A-Number?",
+            "type": "success"
+        },
+        {
+            "response": "I recorded your name and birth date. Next, what date did you become a permanent resident?",
+            "type": "success"
+        }
+    ],
+    "failure_examples": [
+        {
+            "response": "Hi, I'm CitizenFlow. I'll help you complete your N-400 one step at a time.",
+            "type": "failure"
+        },
+        {
+            "response": "Can you repeat that? Let's start from the beginning with your full legal name.",
+            "type": "failure"
+        },
+        {
+            "response": "Hello! How can I help you today?",
+            "type": "failure"
+        }
+    ],
+    "type": "llm"
+}

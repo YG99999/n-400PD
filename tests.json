@@ -1,3 +1,9 @@
 {
-    "tests": []
+    "tests": [
+        {
+            "config": "test_configs\\sample_check.json",
+            "type": "basic-llm",
+            "id": "test_4401kkm996rtf5va4j3dfwx0g5wk"
+        }
+    ]
 }

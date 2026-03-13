@@ -1,6 +1,6 @@
 {
   "name": "navigate_to_review",
-  "description": "Start the visible client-side countdown that moves the user from intake chat to the review screen after backend review readiness is confirmed.",
+  "description": "Show the in-chat review confirmation state so the user can explicitly continue to the review screen.",
   "type": "client",
   "expects_response": true,
   "response_timeout_secs": 30,

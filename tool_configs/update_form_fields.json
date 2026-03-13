@@ -10,7 +10,7 @@
     "properties": {
       "updatesJson": {
         "type": "string",
-        "description": "A JSON string containing an array of objects with path and value keys."
+        "description": "A JSON string containing an array of confirmed updates with path and value keys."
       },
       "note": {
         "type": "string",
