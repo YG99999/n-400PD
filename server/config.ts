@@ -38,6 +38,10 @@ export const config = {
   inlineDocumentProcessing: toBoolean(process.env.INLINE_DOCUMENT_PROCESSING, !production),
   allowProductionFallbacks: toBoolean(process.env.ALLOW_PRODUCTION_FALLBACKS, false),
   allowLocalStorageInProduction: toBoolean(process.env.ALLOW_LOCAL_STORAGE_IN_PRODUCTION, false),
+  elevenLabsApiKey: process.env.ELEVENLABS_API_KEY || "",
+  elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID || "",
+  elevenLabsWebhookSecret: process.env.ELEVENLABS_WEBHOOK_SECRET || "",
+  elevenLabsServerLocation: process.env.ELEVENLABS_SERVER_LOCATION || "us",
 };
 
 export function assertProductionReadiness() {
@@ -81,4 +85,8 @@ export function isProduction() {
 
 export function canUseLocalStorage() {
   return !production || config.allowLocalStorageInProduction || config.allowProductionFallbacks;
+}
+
+export function isElevenLabsConfigured() {
+  return Boolean(config.elevenLabsApiKey && config.elevenLabsAgentId);
 }

@@ -1,0 +1,22 @@
+{
+  "name": "transition_to_review",
+  "description": "Ask CitizenFlow to enter review mode after readiness passes. Use only when the application is complete for the supported intake scope.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "summary": {
+        "type": "string",
+        "description": "A short review-ready summary of the application."
+      }
+    },
+    "required": [
+      "summary"
+    ]
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

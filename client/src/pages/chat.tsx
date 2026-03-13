@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { useLocation, Link } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef } from "react";
+import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -11,33 +11,52 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { authenticatedFetch } from "@/lib/queryClient";
-import type { ChatMessage, Section, WorkflowState, ReadinessStatus } from "@shared/schema";
+import { authenticatedFetch, queryClient } from "@/lib/queryClient";
+import { useElevenLabsConversation } from "@/hooks/use-elevenlabs-conversation";
+import type { AgentStatus, ChatMessage, ReadinessStatus, Section, WorkflowState } from "@shared/schema";
 import { SECTIONS, SECTION_LABELS } from "@shared/schema";
 import {
-  Send,
-  Mic,
-  MicOff,
-  Sun,
-  Moon,
-  LogOut,
-  UserCircle2,
-  Loader2,
-  MessageSquare,
+  ArrowRight,
+  AudioLines,
   CheckCircle2,
   Circle,
-  ArrowRight,
   ClipboardCheck,
+  Keyboard,
+  Loader2,
+  LogOut,
+  MessageSquare,
+  Mic,
+  MicOff,
+  Moon,
+  Radio,
+  Sun,
+  UserCircle2,
+  Volume2,
 } from "lucide-react";
 
-interface ChatResponse {
-  botResponse: string;
-  currentSection: Section;
-  mode: WorkflowState["mode"];
-  workflowState: WorkflowState;
-  readiness: ReadinessStatus;
-  redirectIntent: "review" | null;
+function getStatusLabel(status: AgentStatus, mode: "voice" | "text") {
+  if (mode === "text" && (status === "ready" || status === "listening")) {
+    return "Text mode";
+  }
+
+  switch (status) {
+    case "connecting":
+      return "Connecting";
+    case "reconnecting":
+      return "Reconnecting";
+    case "listening":
+      return "Listening";
+    case "thinking":
+      return "Thinking";
+    case "speaking":
+      return "Speaking";
+    case "error":
+      return "Needs attention";
+    case "ready":
+      return "Ready";
+    default:
+      return "Idle";
+  }
 }
 
 export default function ChatPage() {
@@ -45,10 +64,6 @@ export default function ChatPage() {
   const { theme, toggleTheme } = useTheme();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [inputValue, setInputValue] = useState("");
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [isRedirectingToReview, setIsRedirectingToReview] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -76,273 +91,365 @@ export default function ChatPage() {
   const progressPercent = ((currentSectionIndex + 1) / SECTIONS.length) * 100;
   const inReviewContext = workflowState?.mode === "review" || workflowState?.mode === "post_payment_review";
 
-  useEffect(() => {
-    if (workflowState?.pendingRedirect === "review" && !isRedirectingToReview) {
-      setIsRedirectingToReview(true);
-      const timer = window.setTimeout(() => navigate("/review"), 900);
-      return () => window.clearTimeout(timer);
-    }
-  }, [workflowState?.pendingRedirect, isRedirectingToReview, navigate]);
+  const syncSession = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/form/load", formSessionId] });
+  };
 
-  const sendMutation = useMutation({
-    mutationFn: async (message: string) => {
-      const res = await apiRequest("POST", "/api/chat", {
-        formSessionId,
-        message,
-        conversationStep: currentSection,
-      });
-      return res.json() as Promise<ChatResponse>;
-    },
-    onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/form/load", formSessionId] });
-      if (data.redirectIntent === "review" || data.workflowState?.pendingRedirect === "review") {
-        setIsRedirectingToReview(true);
-        toast({
-          title: "Review is ready",
-          description: "We collected the supported applicant details and are opening the review screen now.",
-        });
-        window.setTimeout(() => navigate("/review"), 900);
-      }
-    },
-    onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    },
+  const conversation = useElevenLabsConversation({
+    formSessionId,
+    initialMessages: messages,
+    currentSection,
+    onSwitchToText: () => inputRef.current?.focus(),
+    onNavigate: (target) => navigate(`/${target}`),
+    onSessionSync: syncSession,
   });
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (conversation.error) {
+      toast({
+        title: "Conversation issue",
+        description: conversation.error,
+        variant: "destructive",
+      });
     }
-  }, [messages.length, sendMutation.isPending]);
+  }, [conversation.error, toast]);
 
-  const handleSend = () => {
-    const msg = inputValue.trim();
-    if (!msg || sendMutation.isPending || isRedirectingToReview) return;
-    setInputValue("");
-    sendMutation.mutate(msg);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  useEffect(() => {
+    if (workflowState?.pendingRedirect === "review" && !conversation.countdown) {
+      conversation.startRedirectCountdown("review");
     }
-  };
+  }, [conversation, workflowState?.pendingRedirect]);
+
+  const transcript = useMemo(
+    () => conversation.transcript.length > 0 ? conversation.transcript : messages,
+    [conversation.transcript, messages],
+  );
 
   if (!user || !formSessionId) return null;
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <header className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0 bg-background">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2">
-            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-label="CitizenFlow">
-              <rect width="32" height="32" rx="8" fill="hsl(var(--primary))" />
-              <path d="M8 16C8 11.58 11.58 8 16 8C18.4 8 20.56 9.08 22 10.76" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M24 16C24 20.42 20.42 24 16 24C13.6 24 11.44 22.92 10 21.24" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M14 15L16 17L20 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span className="font-semibold hidden sm:inline">CitizenFlow</span>
-          </Link>
-          <Badge variant="outline" className="text-xs" data-testid="badge-section">
-            {SECTION_LABELS[currentSection]}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          {workflowState?.readyForReview ? (
-            <Link href="/review">
-              <Button size="sm" data-testid="button-go-review">
-                Review <ArrowRight className="w-3 h-3 ml-1" />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_hsl(var(--primary)/0.16),_transparent_45%),linear-gradient(180deg,_hsl(var(--background)),_hsl(var(--muted)/0.35))]">
+      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2">
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="CitizenFlow">
+                <rect width="32" height="32" rx="8" fill="hsl(var(--primary))" />
+                <path d="M8 16C8 11.58 11.58 8 16 8C18.4 8 20.56 9.08 22 10.76" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M24 16C24 20.42 20.42 24 16 24C13.6 24 11.44 22.92 10 21.24" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M14 15L16 17L20 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold leading-none">CitizenFlow</p>
+                <p className="text-xs text-muted-foreground">Voice-first N-400 intake</p>
+              </div>
+            </Link>
+            <Badge variant="outline" className="hidden text-xs sm:inline-flex" data-testid="badge-section">
+              {SECTION_LABELS[currentSection]}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            {workflowState?.readyForReview ? (
+              <Link href="/review">
+                <Button size="sm" data-testid="button-go-review">
+                  Review <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
+              </Link>
+            ) : null}
+            <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-chat-theme">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <Link href="/account">
+              <Button variant="ghost" size="icon" data-testid="button-account">
+                <UserCircle2 className="h-4 w-4" />
               </Button>
             </Link>
-          ) : null}
-          <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-chat-theme">
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-          <Link href="/account">
-            <Button variant="ghost" size="icon" data-testid="button-account">
-              <UserCircle2 className="w-4 h-4" />
-            </Button>
-          </Link>
-          <Button variant="ghost" size="icon" onClick={async () => { await logout(); navigate("/"); }} data-testid="button-logout">
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
-      </header>
-
-      <div className="px-4 py-2 border-b border-border bg-card shrink-0">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-muted-foreground">
-            Section {currentSectionIndex + 1} of {SECTIONS.length}
-          </span>
-          <span className="text-xs text-muted-foreground">{Math.round(progressPercent)}% complete</span>
-        </div>
-        <Progress value={progressPercent} className="h-1.5" data-testid="progress-bar" />
-        <div className="flex gap-1 mt-2 overflow-x-auto pb-1">
-          {SECTIONS.map((s, i) => (
-            <div
-              key={s}
-              className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                i < currentSectionIndex
-                  ? "bg-primary/10 text-primary"
-                  : i === currentSectionIndex
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {i < currentSectionIndex ? (
-                <CheckCircle2 className="w-3 h-3" />
-              ) : (
-                <Circle className="w-3 h-3" />
-              )}
-              <span className="hidden sm:inline">{SECTION_LABELS[s]}</span>
-              <span className="sm:hidden">{i + 1}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {inReviewContext ? (
-        <div className="border-b border-border bg-primary/5 px-4 py-3 shrink-0">
-          <div className="mx-auto max-w-3xl">
-            <Alert>
-              <ClipboardCheck className="h-4 w-4" />
-              <AlertTitle>
-                {workflowState?.mode === "post_payment_review" ? "Post-payment edit mode" : "Review edit mode"}
-              </AlertTitle>
-              <AlertDescription>
-                The assistant knows you are editing from review. Ask for a correction or clarification, and we will keep the rest of your application intact.
-              </AlertDescription>
-            </Alert>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="border-b border-border bg-background/60 px-4 py-3 shrink-0">
-        <div className="mx-auto max-w-3xl flex flex-wrap items-center gap-2 text-xs">
-          <Badge variant={readiness?.eligibleForReview ? "default" : "secondary"}>
-            {readiness?.eligibleForReview ? "Ready for review" : "Collecting information"}
-          </Badge>
-          {(readiness?.missingFields.length || 0) > 0 ? (
-            <span className="text-muted-foreground">
-              Still needed: {readiness?.missingFields.slice(0, 4).join(", ")}
-              {(readiness?.missingFields.length || 0) > 4 ? "..." : ""}
-            </span>
-          ) : (
-            <span className="text-muted-foreground">
-              We have the core applicant details needed for the supported PDF scope.
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full" ref={scrollRef as never}>
-          <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-            {isLoadingSession ? (
-              <div className="space-y-4">
-                <Skeleton className="h-16 w-3/4" />
-                <Skeleton className="h-10 w-1/2 ml-auto" />
-                <Skeleton className="h-16 w-3/4" />
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center py-20 text-muted-foreground">
-                <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                <p>Start your conversation to begin the application.</p>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  data-testid={`message-${msg.role}-${msg.id}`}
-                >
-                  <div
-                    className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-card border border-border rounded-bl-md"
-                    }`}
-                  >
-                    {msg.content.split("\n").map((line, i) => (
-                      <p key={i} className={i > 0 ? "mt-2" : ""}>{line}</p>
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
-            {sendMutation.isPending && (
-              <div className="flex justify-start" data-testid="indicator-typing">
-                <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
-              </div>
-            )}
-            {isRedirectingToReview && (
-              <div className="flex justify-center pt-6" data-testid="indicator-review-transition">
-                <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-center">
-                  <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-primary" />
-                  Preparing your review screen with the latest answers...
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-
-      <div className="border-t border-border bg-background shrink-0 px-4 py-3">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="shrink-0 mb-0.5"
-              onClick={() => setIsVoiceActive(!isVoiceActive)}
-              data-testid="button-voice"
-              aria-label={isVoiceActive ? "Stop recording" : "Start recording"}
+              onClick={async () => {
+                await logout();
+                navigate("/");
+              }}
+              data-testid="button-logout"
             >
-              {isVoiceActive ? (
-                <MicOff className="w-4 h-4 text-destructive" />
-              ) : (
-                <Mic className="w-4 h-4" />
-              )}
+              <LogOut className="h-4 w-4" />
             </Button>
-            <Textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={inReviewContext ? "Describe what you want to correct or clarify..." : "Type your answer..."}
-              className="min-h-[44px] max-h-[120px] resize-none"
-              disabled={sendMutation.isPending || isRedirectingToReview}
-              data-testid="input-chat"
-              rows={1}
-            />
-            <Button
-              size="icon"
-              className="shrink-0 mb-0.5"
-              onClick={handleSend}
-              disabled={!inputValue.trim() || sendMutation.isPending || isRedirectingToReview}
-              data-testid="button-send"
-              aria-label="Send message"
-            >
-              {sendMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-          <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-            <span>{inReviewContext ? "You are editing with review context preserved" : "Press Enter to send, Shift+Enter for new line"}</span>
-            <span data-testid="text-autosave">Auto-saved</span>
           </div>
         </div>
-      </div>
+      </header>
+
+      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="space-y-4">
+          <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Progress</p>
+                <p className="text-xs text-muted-foreground">
+                  Section {currentSectionIndex + 1} of {SECTIONS.length}
+                </p>
+              </div>
+              <Badge variant={readiness?.eligibleForReview ? "default" : "secondary"}>
+                {readiness?.eligibleForReview ? "Ready for review" : "Collecting info"}
+              </Badge>
+            </div>
+            <Progress value={progressPercent} className="mt-4 h-2" data-testid="progress-bar" />
+            <div className="mt-4 flex flex-wrap gap-2">
+              {SECTIONS.map((section, index) => (
+                <div
+                  key={section}
+                  className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
+                    index < currentSectionIndex
+                      ? "bg-primary/10 text-primary"
+                      : index === currentSectionIndex
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {index < currentSectionIndex ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
+                  <span>{SECTION_LABELS[section]}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Conversation</p>
+                <p className="text-xs text-muted-foreground">
+                  {conversation.preferredMode === "voice" ? "Talk naturally or switch to typing" : "Text-only mode is active"}
+                </p>
+              </div>
+              <Badge variant="outline" className="gap-1">
+                {conversation.agentStatus === "speaking" ? <Volume2 className="h-3 w-3" /> : <Radio className="h-3 w-3" />}
+                {getStatusLabel(conversation.agentStatus, conversation.preferredMode)}
+              </Badge>
+            </div>
+
+            {!conversation.isConnected ? (
+              <div className="mt-5 rounded-3xl border border-dashed border-primary/30 bg-primary/5 p-5">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                    <AudioLines className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-medium">Start by voice</p>
+                      <p className="text-sm text-muted-foreground">
+                        We will ask one question at a time and keep a live transcript on screen.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button onClick={() => void conversation.startConversation("voice")} data-testid="button-start-voice">
+                        <Mic className="mr-2 h-4 w-4" />
+                        Start voice conversation
+                      </Button>
+                      <Button variant="outline" onClick={() => void conversation.startConversation("text")}>
+                        <Keyboard className="mr-2 h-4 w-4" />
+                        Start in text mode
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button
+                    variant={conversation.preferredMode === "voice" ? "default" : "outline"}
+                    onClick={() => void conversation.switchMode("voice")}
+                    data-testid="button-mode-voice"
+                  >
+                    <Mic className="mr-2 h-4 w-4" />
+                    Voice mode
+                  </Button>
+                  <Button
+                    variant={conversation.preferredMode === "text" ? "default" : "outline"}
+                    onClick={() => void conversation.switchMode("text")}
+                    data-testid="button-mode-text"
+                  >
+                    <Keyboard className="mr-2 h-4 w-4" />
+                    Switch to typing
+                  </Button>
+                </div>
+                <Button variant="ghost" className="w-full justify-start" onClick={() => void conversation.endConversation()}>
+                  {conversation.preferredMode === "voice" ? <MicOff className="mr-2 h-4 w-4" /> : <MessageSquare className="mr-2 h-4 w-4" />}
+                  End current session
+                </Button>
+              </div>
+            )}
+
+            {conversation.countdown ? (
+              <Alert className="mt-4">
+                <ArrowRight className="h-4 w-4" />
+                <AlertTitle>
+                  Opening {conversation.countdown.target} in {conversation.countdown.secondsLeft}s
+                </AlertTitle>
+                <AlertDescription>
+                  Speak or type anything to stay here and cancel the automatic handoff.
+                </AlertDescription>
+              </Alert>
+            ) : null}
+          </section>
+
+          <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">What still needs to be collected</p>
+                <p className="text-xs text-muted-foreground">We keep this visible so the agent and the user stay aligned.</p>
+              </div>
+              {(readiness?.missingFields.length || 0) > 3 ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => conversation.setIsMissingFieldsExpanded(!conversation.isMissingFieldsExpanded)}
+                >
+                  {conversation.isMissingFieldsExpanded ? "Collapse" : "Expand"}
+                </Button>
+              ) : null}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(readiness?.missingFields.length || 0) > 0 ? (
+                (conversation.isMissingFieldsExpanded ? readiness?.missingFields : readiness?.missingFields.slice(0, 4))?.map((field) => (
+                  <Badge key={field} variant="secondary">{field}</Badge>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Core supported applicant details are currently covered.</p>
+              )}
+            </div>
+          </section>
+        </aside>
+
+        <section className="flex min-h-[70vh] flex-col overflow-hidden rounded-[32px] border border-border/70 bg-background/90 shadow-xl">
+          <div className="border-b border-border/70 px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Live transcript</p>
+                <p className="text-xs text-muted-foreground">Voice stays primary, but the keyboard is always available.</p>
+              </div>
+              <Badge variant="outline" className="gap-1">
+                {conversation.preferredMode === "voice" ? <Mic className="h-3 w-3" /> : <Keyboard className="h-3 w-3" />}
+                {conversation.preferredMode === "voice" ? "Voice-first" : "Typing"}
+              </Badge>
+            </div>
+          </div>
+
+          {inReviewContext ? (
+            <div className="border-b border-border bg-primary/5 px-5 py-4">
+              <Alert>
+                <ClipboardCheck className="h-4 w-4" />
+                <AlertTitle>
+                  {workflowState?.mode === "post_payment_review" ? "Post-payment edit mode" : "Review edit mode"}
+                </AlertTitle>
+                <AlertDescription>
+                  The assistant keeps your current application intact and only updates the corrections you ask for.
+                </AlertDescription>
+              </Alert>
+            </div>
+          ) : null}
+
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
+                {isLoadingSession ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-16 w-3/4" />
+                    <Skeleton className="ml-auto h-10 w-1/2" />
+                    <Skeleton className="h-16 w-3/4" />
+                  </div>
+                ) : transcript.length === 0 ? (
+                  <div className="flex min-h-[320px] flex-col items-center justify-center text-center text-muted-foreground">
+                    <MessageSquare className="mb-4 h-12 w-12 opacity-30" />
+                    <p className="text-base">Your transcript will appear here as soon as the conversation starts.</p>
+                    <p className="mt-2 text-sm">You can talk first or start directly in text mode.</p>
+                  </div>
+                ) : (
+                  transcript.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                      data-testid={`message-${message.role}-${message.id}`}
+                    >
+                      <div
+                        className={`max-w-[88%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                          message.role === "user"
+                            ? "rounded-br-md bg-primary text-primary-foreground"
+                            : "rounded-bl-md border border-border bg-card"
+                        }`}
+                      >
+                        <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] opacity-70">
+                          <span>{message.role === "user" ? "You" : "CitizenFlow"}</span>
+                          {message.modality ? <span>{message.modality}</span> : null}
+                        </div>
+                        {message.content.split("\n").map((line, index) => (
+                          <p key={`${message.id}-${index}`} className={index > 0 ? "mt-2" : ""}>{line}</p>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+
+          <div className="border-t border-border/70 bg-card/60 px-4 py-4">
+            <div className="mx-auto max-w-3xl">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {conversation.preferredMode === "voice"
+                    ? "Voice is active. You can interrupt the handoff countdown by speaking or typing."
+                    : "Typing uses the same ElevenLabs conversation so context stays intact."}
+                </p>
+                {conversation.status === "connecting" ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
+              </div>
+
+              <div className="flex items-end gap-2">
+                <Button
+                  variant={conversation.preferredMode === "voice" ? "default" : "outline"}
+                  size="icon"
+                  className="mb-0.5 shrink-0"
+                  onClick={() => void conversation.switchMode(conversation.preferredMode === "voice" ? "text" : "voice")}
+                  data-testid="button-voice-toggle"
+                  aria-label={conversation.preferredMode === "voice" ? "Switch to typing" : "Switch to voice"}
+                >
+                  {conversation.preferredMode === "voice" ? <Mic className="h-4 w-4" /> : <Keyboard className="h-4 w-4" />}
+                </Button>
+                <Textarea
+                  ref={inputRef}
+                  value={conversation.composerValue}
+                  onChange={(event) => {
+                    conversation.setComposerValue(event.target.value);
+                    conversation.sendTypingActivity();
+                    if (conversation.countdown) {
+                      conversation.cancelCountdown();
+                    }
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      void conversation.sendMessage();
+                    }
+                  }}
+                  placeholder={inReviewContext ? "Describe the correction you want to make..." : "Type here if you prefer the keyboard"}
+                  className="min-h-[50px] max-h-[140px] resize-none"
+                  data-testid="input-chat"
+                  rows={1}
+                />
+                <Button
+                  className="mb-0.5 shrink-0"
+                  onClick={() => void conversation.sendMessage()}
+                  disabled={!conversation.composerValue.trim()}
+                  data-testid="button-send"
+                  aria-label="Send message"
+                >
+                  {conversation.agentStatus === "thinking" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

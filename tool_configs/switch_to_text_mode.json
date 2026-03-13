@@ -1,0 +1,14 @@
+{
+  "name": "switch_to_text_mode",
+  "description": "Switch the user interface into text input mode when the user asks to type or when spoken capture is not the best experience.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

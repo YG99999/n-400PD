@@ -1,0 +1,27 @@
+{
+  "name": "update_form_fields",
+  "description": "Persist one or more confirmed field updates into the CitizenFlow N-400 session. Use only after the user's answer is clear enough to store.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "description": "JSON-encoded updates plus an optional note.",
+    "properties": {
+      "updatesJson": {
+        "type": "string",
+        "description": "A JSON string containing an array of objects with path and value keys."
+      },
+      "note": {
+        "type": "string",
+        "description": "Optional short note about the update."
+      }
+    },
+    "required": [
+      "updatesJson"
+    ]
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

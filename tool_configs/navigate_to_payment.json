@@ -1,0 +1,14 @@
+{
+  "name": "navigate_to_payment",
+  "description": "Start the visible client-side countdown that moves the user from intake chat to the payment screen after backend payment readiness is confirmed.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

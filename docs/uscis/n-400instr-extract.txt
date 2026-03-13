@@ -1,0 +1,1344 @@
+Instructions for Application for Naturalization 
+Department of Homeland Security
+U.S. Citizenship and Immigration Services
+USCIS
+ Form N-400
+OMB No. 1615-0052
+Expires 02/28/2027
+Form N-400 Instructions   01/20/25
+Page 1 of 29
+Table of Contents
+Form N-400 Instructions	
+Page
+What Is the Purpose of Form N-400?_____________________________________________________________ 2
+List of General Eligibility Requirements__________________________________________________________ 2
+Early Filing __________________________________________________________________________________ 3
+General Instructions for Filing Form N-400_______________________________________________________ 3
+Disability Accommodations/Modifications_________________________________________________________ 5
+How to Complete Form N-400_ _________________________________________________________________ 5
+Specific Instructions by Item Number____________________________________________________________ 5
+Part 1. Information About Your Eligibility______________________________________________________ 5
+Part 2. Information About You (Person applying fornaturalization)_________________________________ 6
+Lawful Admission for Permanent Residence_______________________________________________________ 7
+Time as a Lawful Permanent Resident____________________________________________________________ 7
+Conditional Permanent Residents_______________________________________________________________ 8
+Naturalization Testing and Exceptions___________________________________________________________ 8
+Legal Guardian, Surrogate, or Designated epresentative_____________________________________________ 9
+Part 3. Biographic Information_ ______________________________________________________________ 9
+Categories and Definitions for Ethnicity and Race__________________________________________________ 9
+Part 4. Information About Your Residence______________________________________________________ 10
+Physical Address_ ___________________________________________________________________________ 10
+Mailing Address_____________________________________________________________________________ 11
+Part 5. Information About Your Marital History_________________________________________________ 11
+Eligibility and Evidence for the Spouse of a Member of the U.S. Armed Forces_ __________________________ 11
+Eligibility Based on Marriage to a U.S. Citizen_ ___________________________________________________ 12
+Eligibility for the Spouse, Former Spouse, or Child of a U.S. Citizen under the Violence Against Women Act (VAWA)__ 13
+Eligibility for the Spouse of a U.S. Citizen Working for a Qualified Employer Outside the United States__________ 14
+Part 6. Information About Your Children_______________________________________________________ 15
+Part 7. Information About Your Employment and Schools You Attended_____________________________ 15
+Part 8. Time Outside the United States_________________________________________________________ 16
+Continuous Residence and Physical Presence Requirements__________________________________________ 16
+Preserving Residence Through Form N-470_______________________________________________________ 18
+
+Form N-400 Instructions   01/20/25
+Page 2 of 29
+3-Month Residency in a USCIS District or U.S. State________________________________________________ 18
+Residence of Students_ _______________________________________________________________________ 18
+Physical Presence___________________________________________________________________________ 18
+Part 9. Additional Information About You_ _____________________________________________________ 20
+Good Moral Character_ ______________________________________________________________________ 20
+Eligibility and Evidence for Current and Former Members of the U.S. Armed Forces_ _____________________ 23
+Oath of Allegiance___________________________________________________________________________ 25
+Part 10. Request for a Fee Reduction____________________________________________________________ 25
+Part 11. Applicant’s Contact Information, Certification, and Signature______________________________ 26
+Part 12. Interpreter’s Contact Information, Certification, and Signature_____________________________ 26
+Part 13. Contact Information, Declaration, and Signature of Person Preparing this Application, if Other Than        
+               The Applicant________________________________________________________________________ 26
+Part 14. Additional Information_______________________________________________________________ 26
+Part 15. Signature at Interview_ ______________________________________________________________ 26
+Part 16. Oath of Allegiance___________________________________________________________________ 26
+Where to File?_ ______________________________________________________________________________ 27
+Address Change______________________________________________________________________________ 27
+Processing Information________________________________________________________________________ 27
+USCIS Forms and Information__________________________________________________________________ 28
+Penalties_ ___________________________________________________________________________________ 28
+USCIS Compliance Review and Monitoring_______________________________________________________ 28
+DHS Privacy Notice___________________________________________________________________________ 28
+Paperwork Reduction Act______________________________________________________________________ 29
+What Is the Purpose of Form N-400?
+Form N-400, Application for Naturalization, is an application to become a naturalized U.S. citizen.
+List of General Eligibility Requirements
+In general, you may apply for naturalization when you meet all the requirements to become a U.S. citizen.  The following 
+general eligibility requirements apply to most naturalization applicants (for more information about each of these 
+requirements and exceptions, see the Specific Instructions by Item Number below):
+1.	 You are at least 18 years of age when you file;
+2.	 You have been a lawful permanent resident of the United States for at least 5 years;
+3.	 You have demonstrated continuous residence in the United States for at least 5 years;
+4.	 You have lived in the U.S. state or U.S. Citizenship and Immigration Services (USCIS) district where you claim 
+residence for at least 3 months before filing;
+
+Form N-400 Instructions   01/20/25
+Page 3 of 29
+5.	 You have demonstrated physical presence in the United States for at least 30 months (913 days);
+6.	 You demonstrate good moral character;
+7.	 You demonstrate an attachment to the principles of the U.S. Constitution;
+8.	 You demonstrate a basic knowledge of U.S. history and government (also known as “civics”) as well as an ability to 
+read, write, speak, and understand basic English; and
+9.	 You are willing to take the Oath of Allegiance to the United States, and you are well disposed to the good order and 
+happiness of the United States.
+Also see the Naturalization Eligibility Tool, available at                                                                                       
+https://www.uscis.gov/citizenship-resource-center/learn-about-citizenship/naturalization-eligibility.
+Early Filing
+If you are applying based on lawful permanent residence for 5 years, you may generally file your application up to 90 days 
+before meeting the required 5-year period of continuous residence as a lawful permanent resident.  If you are applying 
+based on your marriage to a U.S. citizen, you may generally file up to 90 days before meeting the required 3-year period 
+of continuous residence as a lawful permanent resident.
+However, applicants filing up to 90 days before meeting the continuous residence requirement must still meet all other 
+requirements for naturalization at the time of filing Form N-400.  If these requirements are not met at the 90-day period, 
+the applicant must wait to file until the requirement is met, otherwise, the application will be rejected or denied.  For 
+example:
+1.	 If you are applying under the Immigration and Nationality Act (INA) section 319(a) as the spouse of a U.S. citizen, 
+you must have been married to a U.S. citizen for at least 3 years at the time you file Form N-400.  See the Eligibility 
+Based on Marriage to a U.S. Citizen section in the Specific Instructions by Item Number, Part 5., Item Numbers 
+5.a. - 5.b. section of these Instructions for information on applying as the spouse of a U.S. citizen; or
+2.	 If you request an exception to the English testing requirements, you must meet the requirements for the exception 
+(age and years as a lawful permanent resident) when you file Form N-400.  See the Naturalization Testing and 
+Exceptions section in the Specific Instructions by Item Number, Part 2., Item Number 11. of these Instructions for 
+more information about exceptions to the English testing requirements.
+You can use the USCIS Early Filing Calculator to ensure that you file your Form N-400 no earlier than 90 days before you 
+complete the required period.  Visit the USCIS website at www.uscis.gov/early-filing-calculator.  We will reject your 
+application if you submit it too early.
+General Instructions for Filing Form N-400
+We provide free forms through the USCIS website.  To view, print, or complete our forms, you should use the latest 
+version of Adobe Reader, which you can download for free at http://get.adobe.com/reader/.  
+You can find additional helpful resources and free study materials for the English and civics requirements at               
+www.uscis.gov/citizenship.
+Signature.  You (or your signing authority) must properly complete your application.  USCIS will not accept a stamped 
+or typewritten name in place of any signature on this application.  If you are under 14 years of age, your mother, father 
+or legal guardian may sign the application on your behalf.  A legal guardian, surrogate, or designated representative may 
+sign for a person who is unable to understand or communicate an understanding of the Oath of Allegiance because of a 
+physical or developmental disability or mental impairment.  If your application is not signed, or if the signature is not 
+valid, we will reject your application.  See 8 CFR 103.2(a)(7)(ii)(A).  If USCIS accepts a request for adjudication and 
+determines that it has a deficient signature, USCIS will deny the request.
+
+Form N-400 Instructions   01/20/25
+Page 4 of 29
+Validity of Signatures.  USCIS will consider a photocopied, faxed, or scanned copy of an original, handwritten signature 
+as valid for filing purposes.  The photocopy, fax, or scan must be of the original document containing the handwritten ink 
+signature. 
+Filing Fee.  See Form G-1055, available at www.uscis.gov/forms, for specific information about the fees applicable to 
+this form.
+Evidence.  When you file your application, you must submit all evidence and supporting documents at the time of filing; 
+however, USCIS may accept evidence you provide at your interview.  See each part of the Specific Instructions by Item 
+Number for the specific evidence required.
+Biometric Services Appointment.  USCIS may require you to appear for an interview and provide biometrics 
+(fingerprints, photograph, and/or signature) at any time to verify your identity, obtain additional information, and conduct 
+background and security checks, including a check of criminal history records maintained by the Federal Bureau of 
+Investigation (FBI), before making a decision on your application or petition.  If we determine that a biometric services 
+appointment is necessary, we will send you an appointment notice with the date, time, and location of your appointment.  
+If you are currently overseas, your notice will instruct you to contact a U.S. Embassy, U.S. Consulate, or USCIS office 
+outside the United States to set up an appointment.  
+At your biometrics appointment, you must sign an oath reaffirming that:
+1.	 You provided or authorized all information in the application; 
+2.	 You reviewed and understood all of the information contained in, and submitted with, your application; and
+3.	 All of this information was complete, true, and correct at the time of filing.
+If you do not attend your biometric services appointment, we may deny your application.
+Photograph Requirements for Applicants Residing Outside the United States
+Certain applicants for naturalization may be eligible for naturalization even though they reside outside the United States, 
+including current members of the U.S. armed forces, their spouses, former members of the U.S. armed forces who served 
+during a designated period of hostilities, and spouses of U.S. citizens working for a qualified employer outside the United 
+States.  If you are applying from outside the United States because you are in one of those categories, you must submit 
+two identical color passport-style photographs of yourself taken recently.  
+The photos must have a white to off-white background, be printed on thin paper with a glossy finish, and be unmounted 
+and unretouched.  The photos must be 2 by 2 inches with a full face, frontal view.  Head height should measure 1 to 1 3/8 
+inches from the top of your hair to the bottom of your chin, and eye height should measure between 1 1/8 and 1 3/8 inches 
+from the top of your eyes to the bottom of the photo.  Your head must be bare unless you are wearing headwear required 
+by your religious denomination.  Using a pencil or felt pen to lightly print your name and A-Number (if any) on the back 
+of the photos.
+Copies.  You should submit legible photocopies of requested documents unless the Instructions specifically instruct you to 
+submit an original document.  USCIS may request an original document at any time during our process.  If we request an 
+original document from you, we will return it to you after USCIS determines it no longer needs the original.  
+NOTE:  If you submit original documents when they are not required or requested, USCIS may destroy them after we 
+receive them.
+
+Form N-400 Instructions   01/20/25
+Page 5 of 29
+Translations.  If you submit a document with information in a foreign language, you must also submit a full English 
+translation.  The translator must sign a certification that the English language translation is complete and accurate, and 
+that he or she is competent to translate from the foreign language into English.  The certification must also include the 
+translator’s signature, printed name, the signature date, and the translator’s contact information.
+USCIS Contact Center.  For additional information on the application and Instructions about where to file, change of 
+address, and other questions, visit the USCIS Contact Center at www.uscis.gov/contactcenter or call 800-375-5283 (TTY 
+800-767-1833).  The USCIS Contact Center provides information in English and Spanish.  
+Disability Accommodations/Modifications.  To request a disability accommodation/modification, follow the instructions 
+on your appointment notice or at www.uscis.gov/accommodationsinfo.
+How To Complete Form N-400
+1.	 Type or print legibly in black ink.
+2.	 If you need extra space to complete any item within this application, use the space provided in Part 14. Additional 
+Information.  Type or print your name and A-Number (if any), at the top of each sheet; indicate the Page Number, 
+Part Number, and Item Number to which your answer refers; and sign and date each sheet.
+3.	 Answer all questions fully and accurately.  If a question does not apply to you (for example, if you have never been 
+married and the question asks “Provide the name of your current spouse”), type or print “N/A” unless otherwise 
+directed.  If your answer to a question that requires a numeric response is zero or none (for example, “How many 
+children do you have” or “How many times have you departed the United States”), type or print “None” unless 
+otherwise directed.
+4.	 Avoid highlighting, crossing out, or typing or printing outside the area provided for a response.  If you must make 
+substantial corrections to your Form N-400, USCIS recommends that you start a new Form N-400 rather than using 
+correction tape or fluid to correct the information.  Our scanners may see through the white correction tape or fluid.  
+This may lead to incorrect information being captured in our systems, which may cause processing delays or a 
+rejection of your Form N-400.
+5.	 Provide your A-Number (if any), on the top right corner of each page.  Your A-Number is located on your Permanent 
+Resident Card (Green Card, formerly known as the Alien Registration Card).  The A-Number on your card consists 
+of a seven- to nine-digit number, depending on when your record was created.  If the A-Number on your card has 
+fewer than nine digits, place enough zeros before the first number to make a total of nine digits on Form N-400.  For 
+example, type or print number A1234567 as A001234567 or type or print number A12345678 as A012345678.  The 
+A-Number may be located on the front or back of your card, depending on when the card was issued.
+6.	 Your application must be properly completed, signed, and filed.  You must include all pages when you file Form 
+N-400, even if the pages are blank.  A photocopy of the original application is acceptable as long as all signatures on 
+the application are handwritten.  USCIS will not accept a stamped or typewritten name in place of a signature.
+Specific Instructions by Item Number
+This application is divided into 16 parts.
+Part 1.  Information About Your Eligibility
+Item Numbers 1.A. - 1.G.  Select the box of naturalization eligibility that applies to you.  Select only one box to identify 
+your eligibility.  If you select more than one box or if you do not select any boxes, your Form N-400 may be delayed or 
+rejected.
+1.A.  General Provision.  Select this box if you have been a lawful permanent resident (LPR) of the United States for at 
+least 5 years.
+
+Form N-400 Instructions   01/20/25
+Page 6 of 29
+1.B.  Spouse of U.S. Citizen.  Select this box if you seek to naturalize based on your marriage to a U.S. citizen.  
+Generally, to qualify for naturalization based on marriage to a U.S. citizen, you must have been a lawful permanent 
+resident for at least 3 years.  For more information see Specific Instructions by Item Number, Part 5., Item Numbers 
+5.a. - 5.b.
+1.C.  VAWA.  Select this box if you are a person who obtained LPR status as the spouse or child of a U.S. citizen who was 
+subjected to battery or extreme cruelty and seek to naturalize under the spousal provision without having to live in marital 
+union for at least 3 years.  For more information see Specific Instructions by Item Number, Part 5., Item Numbers 
+5.a. - 5.b.
+1.D.  Spouse of U.S. Citizen in Qualified Employment Outside the United States.  Select this box if you seek to 
+naturalize based on your U.S. citizen spouse working for a qualified employer outside the United States (INA section 
+319(b)).  For more information see Specific Instructions by Item Number, Part 5., Item Number 8.
+If your residential address is outside the United States and you are filing under this option, select the USCIS field office where 
+you would like to have your naturalization interview.  You can find your USCIS district at www.uscis.gov/field-offices.
+1.E.  Military Service during Period of Hostilities.  Select this box if you seek to naturalize based on honorable service 
+in active duty or in the Selected Reserve of the Ready Reserve of the U.S. armed forces during a designated period 
+of hostilities.  If you were in the United States or certain other specified areas at the time of enlistment, reenlistment, 
+extension of enlistment, or induction, you may apply for naturalization without LPR status.  See Eligibility and Evidence 
+for Current and Former Members of the U.S. Armed Forces in Specific Instructions by Item Number, Part 9., Item 
+Numbers 23. - 29. for more information. 
+1.F.  At Least One Year of Honorable Military Service at Any Time.  Select this box if you seek to naturalize based on 
+at least 1 year of honorable service in the U.S. armed forces at any time.  See Eligibility and Evidence for Current and 
+Former Members of the U.S. Armed Forces in Specific Instructions by Item Number, Part 9., Item Numbers 23. - 29. 
+for more information.
+Part 2.  Information About You (Person applying for naturalization)
+Item Number 1.  Your Current Legal Name (do not provide a nickname).  Your current legal name is the name on your 
+birth certificate unless it changed after birth by a marriage, divorce, or court order.
+Required Evidence - Name Change 
+Provide documentation if your name changed - for example, marriage certificate, divorce decree, or court order. 
+Item Number 2.  Other Names You Have Used Since Birth.  Provide all other names you have ever used, including 
+aliases, maiden name, family name at birth, assumed names, nicknames, and alternate spellings or variations of names.  
+Include any names used in previous immigration applications, petitions, or removal proceedings;  any names provided 
+to immigration officers, U.S. Customs and Border Protection, or U.S. Immigration and Customs Enforcement;  and any 
+names used in any Federal, state, or local criminal arrests, citations, or proceedings.  Include the first, middle, and last 
+name for each additional name used.  If you need extra space to complete this section, use the space provided in Part 14. 
+Additional Information.
+Item Number 3.  Name Change (Optional).  A court can allow you to change your name when you naturalize.  Any 
+name change you request on this application will not be final until you are naturalized by the court.  If you want the court 
+to change your name at your naturalization ceremony, select “Yes” and provide the requested information to complete this 
+section.  You do not need to request a name change if your legal name has already changed through marriage, divorce, or 
+other court order.
+We cannot process name change requests for members of the military, or their spouses, who are seeking naturalization 
+outside of the United States.
+
+Form N-400 Instructions   01/20/25
+Page 7 of 29
+Item Number 4.  USCIS Online Account Number (if any).  You will only have a USCIS Online Account Number  
+(OAN ) if you previously filed a form that has a receipt number that begins with IOE.  If you filed the form online, you 
+can find your OAN in your account profile.  If you mailed us the form, you can find your OAN at the top of the Account 
+Access Notice we sent you.  If you do not have a receipt number that begins with IOE, you do not have an OAN.  The 
+OAN is not the same as an A-Number.
+Item Number 5.  Sex.  Indicate whether you are male or female as provided on your birth certificate issued at the time of 
+birth or issued closest to the time of birth or in secondary evidence you provided to USCIS, if applicable.
+Item Number 6.  Date of Birth (mm/dd/yyyy).  In addition to providing your actual date of birth, include any other dates 
+of birth you have ever used, including dates used in connection with any legal names or non-legal names in the space 
+provided in Part 14. Additional Information.  Provide your date of birth in this order:  Month, Day, Year.  Use eight 
+numbers to show your date of birth in the mm/dd/yyyy format.  We will reject your Form N-400 if you do not provide 
+your date of birth.
+Item Number 7.  Date You Became a Lawful Permanent Resident.  If you are a lawful permanent resident, provide the 
+official date when your permanent residence began, as shown on your Permanent Resident Card (Green Card, formerly 
+known as the Alien Registration Card).  Provide the date in this order:  Month, Day, Year.  Use eight numbers to show 
+the date you became a lawful permanent resident in the mm/dd/yyyy format.  We may reject your application if you are a 
+lawful permanent resident and do not provide the date you became a lawful permanent resident.
+We need both your A-Number (USCIS Number) and your permanent resident date (if applicable) to process your 
+application.  Where applicable, if you do not have this information, you should contact the USCIS Contact Center at  
+www.uscis.gov/contactcenter to obtain this information before you file your Form N-400.
+Lawful Admission for Permanent Residence
+In general, you must show that you have been lawfully admitted to the United States for permanent residence in 
+accordance with all applicable provisions of the Immigration and Nationality Act (INA) in effect at the time of your 
+admission or adjustment.  This requirement applies to your initial admission as a lawful permanent resident (LPR) or 
+adjustment to LPR status, as well as all subsequent reentries into the United States.
+In addition, you must show that you have not abandoned your LPR status.  If you leave the United States and demonstrate 
+you no longer intend to reside in the United States, that is abandoning LPR status.
+Time as a Lawful Permanent Resident 
+In general, you must be a lawful permanent resident for 5 years before applying for naturalization unless you are:
+•	
+A U.S. noncitizen national (person born in American Samoa or Swains Island) (not required to be a lawful permanent 
+resident); 
+•	
+Applying for naturalization based on service in the U.S. armed forces (see the Specific Instructions by Item 
+Number, Part 9., Item Numbers 23. - 29. in these Instructions for more information); 
+•	
+Applying for naturalization based on being a spouse of a U.S. citizen (see the Specific Instructions by Item Number, 
+Part 5., Item Numbers 5.a. - 5.b. in these Instructions for more information), including the spouse of a U.S. citizen 
+in qualified employment outside the United States (see the Specific Instructions by Item Number, Part 5., Item 
+Number 8. in these Instructions for more information); or
+•	
+Applying for naturalization under the Violence Against Women Act (VAWA) based on being a spouse or child of a 
+U.S. citizen who battered you or subjected you to extreme cruelty (see the Specific Instructions by Item Number, 
+Part 5., Item Numbers 5.a. - 5.b. in these Instructions for more information).
+
+Form N-400 Instructions   01/20/25
+Page 8 of 29
+Conditional Permanent Residents
+If you are a conditional permanent resident, you must file Form I-751, Petition to Remove Conditions on Residence, 
+or Form I-829, Petition by Investor to Remove Conditions on Permanent Resident Status, within 90 days before your 
+conditional permanent resident status expires, unless you can establish good cause and extenuating circumstances for 
+failing to file Form I-751 or Form I-829 during that time period.  In most cases, you must have an approved Form I-751 or 
+Form I-829 before we can approve your application for naturalization.
+Military members applying under INA section 329 and certain spouses of U.S. citizens employed outside the United 
+States by qualified organizations under INA section 319(b) do not need an approved Form I-751 or Form I-829. 
+Item Number 8.  Country of Birth.  Type or print the name of the country in which you were born.  Use the name of the 
+country at the time of your birth, even if the name of the country has changed.
+Item Number 9.  Country of Citizenship or Nationality.  Type or print the current name of the country of which you are 
+currently a citizen or national.  If the country’s name has changed, type or print the current name of the country.  If you are 
+stateless, type or print the name of the country, as it currently exists, where you were last a citizen or national.  If you are a 
+citizen or national of more than one country, type or print the name of the foreign country that issued your last passport in 
+this Item Number.  Provide information about additional countries of citizenship or nationality using Part 14. Additional 
+Information.
+Item Number 11.  Disability Exceptions to Testing.  Select “Yes” if you are requesting an exception to the English 
+language test or civics test or both based on a physical or developmental disability or mental impairment that prevents you 
+from complying with the English language or civics requirements for naturalization.
+Naturalization Testing and Exceptions
+Almost all applicants for naturalization must take a naturalization test to demonstrate that they are able to read, write, 
+speak, and understand English, and that they have a basic knowledge of civics (U.S. history and government).  You do not 
+have to take the English reading, writing, speaking, and understanding test, and you can take the civics test in a language 
+of your choice if at the time you file your application:  
+•	
+You are 50 years of age or older and have been a lawful permanent resident for at least 20 years; or
+•	
+You are age 55 years of age or older and have been a lawful permanent resident for at least 15 years.  
+If you are 65 years of age or older and have been a lawful permanent resident for at least 20 years, you may take a 
+simplified version of the civics test.  For additional information about the test, please visit www.uscis.gov/citizenship.
+You may be eligible for an exception to the English language test or civics test or both if you have a physical or 
+developmental disability or mental impairment that has lasted, or is expected to last, 12 months or more.  If you are 
+requesting a medical exception to the English language and civics tests, answer “Yes” to Part 2., Item Number 11. 
+in Form N-400 and submit a completed Form N-648, Medical Certification for Disability Exceptions (available at 
+www.uscis.gov/N-648) with your Form N-400.
+If you need an interpreter and you qualify for an exception to the English part of the test, you must bring an interpreter 
+to the interview.  For additional information on who may qualify as an interpreter, see Policy Manual Volume 12, 
+Citizenship and Naturalization, Part B, Naturalization Examination, Chapter 3, Naturalization Interview (available at 
+www.uscis.gov/policy-manual/volume-12-part-b-chapter-3).
+Required Evidence - Disability Exceptions
+If you answer “Yes” to Part 2., Item Number 11., you must provide a completed Form N-648, Medical Certification 
+for Disability Exceptions (available at www.uscis.gov/N-648) when you file your Form N-400.  Submitting Form 
+N-648 does not guarantee we will exempt you from the testing requirements.
+
+Form N-400 Instructions   01/20/25
+Page 9 of 29
+Legal Guardian, Surrogate, or Designated Representative
+If you cannot undergo any part of the naturalization process because of a physical or developmental disability or 
+mental impairment, you may have a legal guardian, a surrogate, or an eligible designated representative complete the 
+naturalization process for you.
+Required Evidence - Legal Guardian, Surrogate, or Designated Representative
+1.	 Provide a court order authorizing the legal guardian or surrogate to exercise authority over the applicant’s 
+affairs.  In the absence of a court ordered legal guardian or surrogate, an authorized designated representative 
+who is the primary custodial caregiver and who takes responsibility for the applicant can serve as the designated 
+representative.  The family member must provide documentation to establish a familial relationship between the 
+applicant and the designated representative, as well as proof that the designated representative is the primary 
+custodial caregiver and takes responsibility for the applicant.
+2.	 If unable to take the Oath, you may provide a completed and signed Form N-648, Medical Certification for 
+Disability Exceptions.  Alternatively, you may provide a written evaluation by an authorized medical professional.
+Item Numbers 12.a. - 12.c.  Social Security Update.  If you want the Social Security Administration (SSA) to issue 
+you an original Social Security card or issue a replacement Social Security card and update your immigration status, then 
+answer “Yes” to both Item Numbers 12.a. and 12.c., which gives your consent for USCIS to provide your information to 
+the SSA.  If you want a replacement card, you must enter the SSN from your card in Item Number 12.b.  If you provide 
+your Consent for Disclosure in Item Number 12.c., then if USCIS approves your application and you take the Oath of 
+Allegiance, we will provide information from your application and USCIS systems, including your immigration status, to 
+the SSA.  The SSA may assign you an SSN and issue you an original or replacement Social Security card.  The SSA will 
+also update your immigration status to that of U.S. citizen after you take the Oath of Allegiance. 
+If you request a name change as part of Form N-400, USCIS will send your updated name to the SSA. 
+You are not required to request a Social Security card using this application.  However, you must have a Social Security 
+Number (SSN) properly assigned in your name to work in the United States.
+If your employer uses E-Verify to confirm new employees’ eligibility to legally work in the United States, the information 
+you provide on Form I-9, Employment Eligibility Verification, will be compared to data in SSA and Department of 
+Homeland Security (DHS) databases.  Employees must have an SSN in order for E-Verify to confirm their eligibility to 
+legally work in the United States.  For information about privacy, see the Social Security Administration Privacy Act 
+Statement in the DHS Privacy Notice section of the Instructions.
+Part 3.  Biographic Information
+Provide the biographic information requested in Item Numbers 1. - 6. of this part.  Providing this information as part of 
+your application may reduce the time you spend at your USCIS ASC appointment as described in the Biometric Services 
+Appointment section of the General Instructions for Filing Form N-400.
+Item Numbers 1. - 2.  Ethnicity and Race.  Select the boxes that best describe your ethnicity and race.
+Categories and Definitions for Ethnicity and Race
+1.	 Hispanic or Latino.  A person of Cuban, Mexican, Puerto Rican, South or Central American, or other Spanish culture 
+or origin, regardless of race.  (NOTE:  This category is only included under Ethnicity in Part 3., Item Number 1.)
+2.	 American Indian or Alaska Native.  A person having origins in any of the original peoples of North and South 
+America (including Central America), and who maintains tribal affiliation or community attachment.
+3.	 Asian.  A person having origins in any of the original peoples of the Far East, Southeast Asia, or the Indian 
+subcontinent including, for example, Cambodia, China, India, Japan, Korea, Malaysia, Pakistan, the Philippine 
+Islands, Thailand, and Vietnam.
+4.	 Black or African American.  A person having origins in any of the black racial groups of Africa.
+
+Form N-400 Instructions   01/20/25
+Page 10 of 29
+5.	 Native Hawaiian or Other Pacific Islander.  A person having origins in any of the original peoples of Hawaii, 
+Guam, Samoa, or other Pacific Islands.
+6.	 White.  A person having origins in any of the original peoples of Europe, the Middle East, or North Africa.
+Item Number 3.  Height.  Select the values that best match your height in feet and inches.  For example, if you are five 
+feet and nine inches, select “5” for feet and “09” for inches.  Do not enter your height in meters or centimeters.  
+Item Number 4.  Weight.  Enter your weight in pounds.  If you do not know your weight or need to enter a weight under 
+30 pounds or over 699 pounds, enter “000.”  Do not enter your weight in kilograms.
+Item Number 5.  Eye Color.  Select the box that best describes the color of your eyes.
+Item Number 6.  Hair Color.  Select the box that best describes the color of your hair.
+Part 4.  Information About Your Residence
+Based in part on the information you provide in this Part 4. Information About Your Residence, Part 7. Information 
+About Your Employment and Schools You Attended, and Part 8. Time Outside the United States of Form N-400, 
+USCIS will determine whether you meet the requirements for continuous residence, physical presence, and 3-month 
+residency in a USCIS district or U.S. state.
+In Part 4., list every location where you have lived during the last 5 years if you are filing based on general provision, 
+under Item Number 1.A. in Part 1. Information About Your Eligibility. 
+•	
+If you are filing as the spouse of a U.S. citizen, under Item Number 1.B. in Part 1. Information About Your 
+Eligibility, list every location where you have lived during the last 3 years.  
+•	
+If you are filing as the spouse, former spouse, or child of a U.S. citizen under the Violence Against Women Act 
+(VAWA), under Item Number 1.C. in Part 1. Information About Your Eligibility, list every location where you 
+have lived during the last 3 years.
+•	
+If you are filing as the spouse of a U.S. citizen in qualified employment outside the United States, under Item 
+Number 1.D. in Part 1. Information About Your Eligibility, you do not have to list every location where you have 
+lived, only the current location. 
+•	
+If you are filing based on military service during a period of hostilities, under Item Number 1.E. in Part 1. 
+Information About Your Eligibility, you do not have to list every location where you have lived, only the current 
+location. 
+•	
+If you are filing based on at least one year of honorable military service at any time, under Item Number 1.F. in Part 
+1. Information About Your Eligibility, list every location where you have lived during the last 5 years.
+•	
+If you are filing based on another reason for filing not listed above, under Item Number 1.G. in Part 1. Information 
+About Your Eligibility, list every location where you have lived during the last 5 years.
+Item Number 1.  Physical Addresses
+You must provide a physical address so that USCIS can schedule your biometric and interview appointments at the correct 
+location. 
+If you are currently homeless, you can indicate “homeless” in the Physical Address field; however, you will need to 
+provide the city or town, state, ZIP code, and province and country (if you live outside the United States) where you live.  
+You can then use Form G-1145, e-Notification of Application/Petition Acceptance, to request notification by text or email 
+confirming receipt of your Form N-400.
+
+Form N-400 Instructions   01/20/25
+Page 11 of 29
+If you are a victim of domestic violence, you are not required to disclose the confidential address of a shelter or safe 
+house.  If you are currently residing in a shelter or safe house or have resided in a shelter or safe house for part of the 
+reporting period, you may provide just the name of the city and state of residence for the shelter or safe house in Part 4., 
+Item Number 1.  If we need further clarification, we will ask at the interview.
+Item Numbers 2. and 3.  Mailing Address 
+If your mailing address is not the same as your current physical address or if you did not provide a complete physical 
+address, you must provide a current mailing address.  We will use your mailing address to mail notices.  If you do not 
+provide a current, complete, and valid mailing address, we may reject your Form N-400.  
+If you are residing in a shelter or safe house at the time of filing this application or you otherwise do not feel safe 
+providing your current mailing address, you may provide a “safe address” where you are able to receive mail in Part 4., 
+Item Number 3.  You may provide a post office box (P.O. Box) or the address of a friend, your attorney, a community-
+based organization that is helping you, or any other address where you can safely and timely receive mail.  
+If you reside outside of the United States, are applying under INA section 319(b), and you want us to collect your 
+biometrics in the United States, you must provide an address in the United States.  We will send a letter to your U.S. 
+mailing address notifying you when and where to go for your biometric services appointment.
+Part 5.  Information About Your Marital History
+See the Eligibility Based on Marriage to a U.S. Citizen section in the Specific Instructions section of these 
+Instructions. 
+Item Number 1.  Current Marital Status.  Select the box that best describes your marital status.
+Item Number 2.  Military Spouses.  Select “Yes,” if your spouse is a current member of the U.S. armed forces or “No,” 
+if your spouse is not a current member of the U.S. armed forces.
+Eligibility and Evidence for the Spouse of a Member of the U.S. Armed Forces
+If you are the lawful permanent resident spouse of a member of the U.S. armed forces, you are authorized to accompany 
+the member and reside abroad with him or her on official orders, and you are residing outside the United States with 
+your spouse in marital union, you may be eligible to complete the entire naturalization process outside the United States.  
+Provide the following evidence:
+1.	 Documentation you are authorized to accompany the member under his or her official orders; and
+2.	 Documentation of his or her military service with the U.S. armed forces.
+Item Number 3.  Marriages.  Your response should include your current marriage, any marriages before or during 
+your current marriage, marriages in the United States, marriages in other countries, annulled marriages, civil marriages, 
+and customary or religious marriages, whether or not the marriage was registered with a government.  If you have been 
+married more than once to the same person, count each marriage separately.  Type or print the number of times you have 
+been married.
+Item Numbers 4.a. - 4.d.  Enter the legal name, date of birth, date of marriage of your current spouse, and whether your 
+spouse’s physical address is the same as your physical address.
+
+Form N-400 Instructions   01/20/25
+Page 12 of 29
+Item Numbers 5.a. - 5.b.  Enter when your current spouse became a U.S. citizen.
+Eligibility Based on Marriage to a U.S. Citizen 
+In addition to the general eligibility requirements listed above, you must meet certain requirements if you seek to 
+naturalize based on your marriage to a U.S. citizen.  If you or your spouse were previously married, you must demonstrate 
+that all of your and your spouse’s previous marriages were lawfully terminated.  Please see Part 5. Information About 
+Your Marital History of Form N-400 for what information we require about your marital history.
+Generally, to qualify for naturalization based on marriage to a U.S. citizen, you must meet these requirements at the time 
+you file your application:
+1.	 You must be legally married to a U.S. citizen who resides in the United States, and you must remain legally married to 
+the U.S. citizen until you take the Oath of Allegiance;
+2.	 You must have been living in marital union with your U.S. citizen spouse for at least 3 years; 
+3.	 Your spouse must have been a U.S. citizen for at least 3 years;  and
+4.	 You must have been a lawful permanent resident for at least 3 years (see the Early Filing section of these Instructions 
+for additional information).
+Required Evidence - Eligibility Based on Marriage to a U.S. Citizen
+Provide a copy of the following if you are applying for naturalization based on your marriage to a U.S. citizen:
+1.	 Evidence that your spouse has been a U.S. citizen for at least 3 years at the time you file your Form N-400.  For 
+example:
+A.	 Your spouse’s U.S. birth certificate (if your spouse has held U.S. citizenship since birth);
+B.	 Your spouse’s Certificate of Naturalization;
+C.	 Your spouse’s Certificate of Citizenship; 
+D.	 Your spouse’s Form FS-240, Consular Report of Birth Abroad; or
+E.	 The biographical page of your spouse’s U.S. passport;
+2.	 Current marriage certificate and any divorce decree, annulment decree, or death certificate showing that your and 
+your spouse’s prior marriages were terminated (if applicable); and
+3.	 Evidence that you and your spouse have lived in marital union for at least 3 years before the time you file your 
+Form N-400.  Some examples include: 
+A.	 Joint bank or credit card statements; 
+B.	 Leases or mortgages;
+C.	 Birth certificates or adoption decrees (as applicable) for any children born or adopted during the marriage by 
+either spouse;
+D.	 Insurance policies; and
+E.	 IRS tax transcripts for you and your spouse for the past 3 years.
+
+Form N-400 Instructions   01/20/25
+Page 13 of 29
+Eligibility for the Spouse, Former Spouse, or Child of a U.S. Citizen under the Violence Against Women Act (VAWA)
+Any person who obtained LPR status as the spouse or child of a U.S. citizen who subjected the person to battery or 
+extreme cruelty may naturalize under the spousal provision without having to live in marital union for at least 3 years.  To 
+qualify you must: 
+1.	 Have obtained LPR status based on:
+•	
+An approved Petition for Amerasian, Widow(er), or Special Immigrant (www.uscis.gov/i-360) as the self-
+petitioning spouse, intended spouse, or child of an abusive U.S. citizen;
+•	
+An approved Petition for Amerasian, Widow(er), or Special Immigrant (www.uscis.gov/i-360) as the self-
+petitioning spouse, intended spouse, or child of an abusive LPR, if the abusive spouse naturalizes after the petition 
+has been approved;
+•	
+Special rule cancellation of removal for abused spouses and children in cases where the applicant was the child, 
+spouse, or intended spouse of a U.S. citizen, who subjected him or her to battery or extreme cruelty;
+•	
+An approved Petition for Amerasian, Widow(er), or Special Immigrant (www.uscis.gov/i-360) as the derivative 
+child of a self-petitioning spouse of a U.S. citizen who was battered or subjected to extreme cruelty by a U.S. 
+citizen spouse; or
+•	
+An approved Petition to Remove Conditions on Residence (www.uscis.gov/i-751), for a conditional permanent 
+resident, filed as a waiver of the joint filing requirement, if the marriage was entered into in good faith and the 
+spouse, intended spouse, or child was subjected to battery or extreme cruelty by the petitioning citizen spouse or 
+parent.
+2.	 Be at least 18 years of age; 
+3.	 Continuously reside in the United States for at least 3 years after obtaining lawful permanent residence; 
+4.	 Be physically present in the United States for at least 18 months during the 3 years immediately before filing your 
+application; 
+5.	 Live in the state or USCIS district with jurisdiction over your place of residence for at least 3 months before filing 
+your application; and
+6.	 Demonstrate good moral character for at least 3 years before filing your application.
+NOTE:  Evidence of the spouse's U.S. citizenship, marriage to the U.S. citizen, divorce or separation, or marital union is 
+NOT required if you obtained LPR status as the spouse, former spouse, or intended spouse of a U.S. citizen who subjected 
+you to battery or extreme cruelty.
+Item Number 7.  Spouse’s Marriages.  Your response should include your spouse’s current marriage, any marriages 
+before or during your spouse’s current marriage, marriages in the United States, marriages in other countries, annulled 
+marriages, civil marriages, and customary or religious marriages whether or not the marriage was registered with a 
+government.
+Item Number 8.  Current Spouse’s Current Employer or Company.  Answer this question only if you are filing as a 
+spouse of a U.S. citizen in qualified employment outside the United States.
+
+Form N-400 Instructions   01/20/25
+Page 14 of 29
+Eligibility for the Spouse of a U.S. Citizen Working for a Qualified Employer Outside the United States 
+In addition to some of the general eligibility requirements listed above, you must meet certain requirements if you seek 
+to naturalize based on your U.S. citizen spouse working for a qualified employer outside the United States (INA section 
+319(b)).
+1.	 You must be legally married to a U.S. citizen who is working outside the United States for a qualified employer; 
+2.	 Your U.S. citizen spouse’s qualified employment outside the United States must be scheduled to last for at least 1 year 
+after the time you file Form N-400; 
+3.	 You must be a lawful permanent resident when you file your application for naturalization;
+4.	 You must declare in good faith an intention to reside in the United States immediately after your spouse’s qualified 
+employment outside the United States ends;
+5.	 You must be present in the United States when you take the Oath of Allegiance; and
+6.	 You must establish that you will join your U.S. citizen spouse within 30 to 45 days after you are naturalized.
+If you meet these requirements, you are not required to show any prior residence or period of physical presence within 
+the United States or any state or USCIS district.  You must be present in the United States at the time of your interview 
+and naturalization.  In Part 1. Information About Your Eligibility of Form N-400, type or print the name of the USCIS 
+field office where you would like to have your naturalization interview or select a USCIS field office from the drop-down 
+menu.  Visit the USCIS website at www.uscis.gov/field-offices to find a USCIS field office.
+For a list of qualifying employers, see Item C. in Item Number 3. below.  
+Required Evidence - Eligibility for the Spouse of a U.S. Citizen Working for a Qualified Employer Outside the 
+United States
+1.	 Evidence that your spouse is a U.S. citizen at the time you file your Form N-400.  For examples, see Required 
+Evidence - Eligibility Based on Marriage to a U.S. Citizen in the Specific Instructions by Item Number, Part 
+5., Item Numbers 5.a. - 5.b. section of the Instructions.  
+2.	 Current marriage certificate and any divorce decree, annulment decree, or death certificate showing that your and 
+your spouse’s prior marriages were terminated (if applicable); and
+3.	 Evidence demonstrating your U.S. citizen spouse’s qualified employment outside the United States.  For example:
+A.	 The employer’s name and nature of the employer’s business;
+B.	 The nature of the work the U.S. citizen spouse is performing; and
+C.	 Documentation to establish the employing entity is:
+(1)	 The U.S. Government;
+(2)	 An American institution of research recognized as such by the Attorney General (see www.uscis.gov/air);
+(3)	 A public international organization in which the United States participates by treaty or statute;
+(4)	 An American firm or corporation that is engaged in whole or in part in the development of U.S. foreign 
+trade and commerce; or
+(5)	 A religious denomination or an interdenominational mission organization and your spouse is performing 
+the ministerial or priestly functions of the religious denomination or is serving as a missionary, brother, 
+nun, or sister for the religious denomination or interdenominational mission.
+D.	 In addition, provide the following:
+(1)	 If applicable, your U.S. citizen spouse’s travel orders which include your name;
+
+Form N-400 Instructions   01/20/25
+Page 15 of 29
+(2)	 Documentation to establish your spouse’s qualified employment outside the United States is scheduled to 
+last for at least 1 year from the date you file Form N-400; and
+(3)	 A typed or printed statement of your intent to reside outside the United States with your spouse and to live 
+in the United States immediately after your spouse’s qualified employment outside the United States ends.
+Part 6.  Information About Your Children
+Item Number 1.  Indicate your total number of children under 18 years of age.  You must indicate ALL children 
+under 18 years of age, including:  children born in the United States or in other countries; children living with you or 
+elsewhere; current stepchildren; legally adopted children; missing children; and children born when you were not married, 
+when you were in a civil marriage (whether or not your son or daughter’s other parent was your spouse), or when you 
+were in a customary or religious marriage (whether or not your son or daughter’s other parent was your spouse).
+An applicant who willfully failed or refused to support his or her dependents during the statutory period, even if there is 
+no court-ordered child support, cannot establish good moral character (GMC) unless the applicant establishes extenuating 
+circumstances.
+Required Evidence - Child and Spousal Support
+Provide evidence that you have complied with any child and spousal support obligations.  If you have dependent 
+children living apart from you, provide evidence that you support each dependent son or daughter and that you have 
+complied with any child support obligations.  If a court has ordered you to provide financial support for a spouse, 
+former spouse, or children, provide the court or government order and evidence that you have complied with the 
+order.  For example:
+1.	 Cancelled checks or money order receipts;
+2.	 A court or agency document showing child support payments;
+3.	 Evidence of wage garnishments; or
+4.	 A notarized letter from the parent or guardian who cares for your children.
+Part 7.  Information About Your Employment and Schools You Attended
+In Parts 7. and 8., you will provide more information about your continuous residence and physical presence in the 
+United States for the required period. 
+In Part 7., list where you have worked or attended school full time or part time during the last 5 years in the table 
+provided if you are filing based on general provision, under Item Number 1.A. in Part 1. Information About Your 
+Eligibility.  
+•	
+If you are filing as the spouse of a U.S. citizen, under Item Number 1.B. in Part 1. Information About Your 
+Eligibility, list where you have worked or attended school full time or part time during the last 3 years.
+•	
+If you are filing as the spouse, former spouse, or child of a U.S. citizen under the Violence Against Women Act 
+(VAWA), under Item Number 1.C. in Part 1. Information About Your Eligibility, list where you have worked or 
+attended school full time or part time during the last 3 years.
+•	
+If you are filing as the spouse of a U.S. citizen in qualified employment outside the United States, under Item 
+Number 1.D. in Part 1. Information About Your Eligibility, list where you have worked or attended school full 
+time or part time during the last 3 years. 
+•	
+If you are filing based on military service during a period of hostilities, under Item Number 1.E. in Part 1. 
+Information About Your Eligibility list where you have worked or attended school full time or part time during the 
+last year. 
+
+Form N-400 Instructions   01/20/25
+Page 16 of 29
+•	
+If you are filing based on at least one year of honorable military service at any time, under Item Number 1.F. in Part 
+1. Information About Your Eligibility, list where you have worked or attended school full time or part time during 
+the last 5 years.
+•	
+If you are filing based on another reason for filing not listed above, under Item Number 1.G. in Part 1. Information 
+About Your Eligibility, list where you have worked or attended school full time or part time during the last 5 years.
+Part 8.  Time Outside the United States
+In Part 8., list all the trips that you have taken outside the United States during the last 5 years if you are filing based on 
+general provision, under Item Number 1.A. in Part 1. Information About Your Eligibility. 
+•	
+If you are filing as the spouse of a U.S. citizen, under Item Number 1.B. in Part 1. Information About Your 
+Eligibility, list all the trips that you have taken outside the United States during the last 3 years.  
+•	
+If you are filing as the spouse, former spouse, or child of a U.S. citizen under the Violence Against Women Act 
+(VAWA), under Item Number 1.C. in Part 1. Information About Your Eligibility, list all the trips that you have 
+taken outside the United States during the last 3 years.  
+•	
+If you are filing as the spouse of a U.S. citizen in qualified employment outside the United States, under Item 
+Number 1.D. in Part 1. Information About Your Eligibility, you do not have to list any trips that you have taken 
+outside the United States. 
+•	
+If you are filing based on military service during a period of hostilities, under Item Number 1.E. in Part 1. 
+Information About Your Eligibility, you do not have to list any trips that you have taken outside the United States. 
+•	
+If you are filing based on at least one year of honorable military service at any time, under Item Number 1.F. in Part 
+1. Information About Your Eligibility, list all the trips that you have taken outside the United States during the last 5 
+years.
+•	
+If you are filing based on another reason for filing not listed above, under Item Number 1.G. in Part 1. Information 
+About Your Eligibility, list all the trips that you have taken outside the United States during the last 5 years.
+Continuous Residence
+If you are required to demonstrate lawful permanent residence, you must establish that you did not break the continuity of 
+your residence in the United States.  You can see what information we require about your travel in Part 8. Time Outside 
+the United States.
+“Continuous residence” means that you have not been outside the United States for a long period of time.  Generally:
+1.	 If you are applying based on being a lawful permanent resident, the continuous residence requirement is at least 5 
+years; or
+2.	 If you are applying based on being a spouse to a U.S. citizen, or if you are applying based on obtaining status as 
+a lawful permanent resident as the spouse or child of a U.S. citizen who battered you or subjected you to extreme 
+cruelty (INA section 319(a)), the continuous residence requirement is at least 3 years.
+To establish continuous residence in the United States, you must demonstrate that you have maintained your residence in 
+the United States for the entire time within the 3- or 5-year period.
+The USCIS officer will review your travel history and documents during your naturalization interview to determine if you 
+meet this requirement.  You will not meet the continuous residence requirement if you left the United States, without our 
+approval, for a continuous period of 1 year or more during your required continuous residence period or after you filed 
+your Form N-400.  (See the Preserving Continuous Residence table and the Preserving Residence Through Form 
+N-470 section below.)
+If you were absent for more than 6 months but less than 1 year, you must demonstrate that you did not break the continuity 
+of your residence in the United States.
+
+Form N-400 Instructions   01/20/25
+Page 17 of 29
+Some factors indicating that you did not break the continuity of your residence are:
+1.	 You did not terminate your employment in the United States or work while outside the United States;
+2.	 Your immediate family remained in the United States during your absence; or
+3.	 You retained full access to your home residence in the United States.
+Residence in the Commonwealth of the Northern Mariana Islands on or after November 28, 2009, is considered 
+continuous residence within the United States for naturalization purposes.
+Required Evidence - Continuous Residence
+If you have taken any trips outside the United States that lasted more than 6 months but less than 1 year, provide 
+evidence that you maintained your continuous residence in the United States.  For example:
+1.	 Internal Revenue Service (IRS) tax transcripts listing tax information relevant to your absence for the last 5 years 
+(or 3 years if you are applying on the basis of marriage to a U.S. citizen);
+2.	 Rent or mortgage statements, or pay statements;
+3.	 Bank, credit card, or loan statements showing regular transactions;
+4.	 Proof of car registration and insurance;
+5.	 Your passport showing entry and exit stamps; or
+6.	 Any other document that shows that you maintained your residence in the United States.
+The Preserving Continuous Residence table below lists some common circumstances under which you may be 
+eligible to count time residing outside the U.S. as residence in the United States for naturalization purposes. 
+Preserving Continuous Residence
+Your Employer or Vocation
+Continuous Residence Requirement
+U.S. Government employee or contractor outside the 
+United States.
+You may preserve your continuous residence by filing 
+Form N-470. 
+Employee or contractor of an American institution of 
+research.
+You may preserve your continuous residence by filing 
+Form N-470.
+Qualified American firm or corporation.
+You may preserve your continuous residence by filing 
+Form N-470.
+Employee of a public international organization of which 
+the United States is a member by a treaty or statute and 
+by which the applicant was not employed until after 
+becoming a lawful permanent resident.
+You may preserve your continuous residence by filing 
+Form N-470.
+Employee of a U.S. nonprofit organization that principally 
+promotes the interests of the United States outside the 
+United States through the communications media.
+You are exempt from the continuous residence 
+requirement.
+Interpreter, translator, or security-related position 
+(executive or manager) employed by or under contract 
+with the Chief of Mission (Department of State) or U.S. 
+armed forces.
+Your entire period outside the United States may count as 
+continuous residence in the United States if you engaged 
+in qualifying employment for any portion of the period 
+outside the United States.
+Employed in religious duties outside the United States.
+The time you resided outside the United States in a 
+religious vocation may count as residence in the United 
+States if you file Form N-470 at any time before you file 
+the N-400, even after you return to the United States.
+
+Form N-400 Instructions   01/20/25
+Page 18 of 29
+NOTE:  Approval and use of a Reentry Permit or Refugee Travel Document for extended absences does not preserve 
+continuous residence for naturalization purposes.
+Preserving Residence Through Form N-470 
+If you were absent for 1 year or more during the period when continuous residence is required while working in qualified 
+employment outside the United States, you generally must have an approved Form N-470, Application to Preserve 
+Residence for Naturalization Purposes, to preserve your continuous residence.  For additional information, see the Form 
+N-470 Instructions at www.uscis.gov/N-470.
+3-Month Residency in a USCIS District or U.S. State
+In general, you must have resided in the same USCIS district or the same U.S. state for at least 3 months before filing 
+Form N-400.  Please refer to Part 4. Information About Your Residence of Form N-400 for what information we 
+require about your address history.
+You can find your USCIS district at www.uscis.gov/field-offices.
+Residence of Students
+Lawful permanent resident students who are eligible for naturalization may apply for naturalization either in the USCIS 
+district where they go to school or in the USCIS district where their parents live if they are still financially dependent on 
+their parents.
+Physical Presence
+Certain applicants must meet physical presence requirements in the United States.  Physical presence refers to the number 
+of days you must be physically present in the United States during the period of continuous residence required before you 
+file Form N-400.
+In general, you must have been physically present in the United States for a period or periods totaling at least half of the 
+required continuous residence period.  We will count the day that you depart from the United States and the day you return 
+as days of physical presence within the United States for naturalization purposes.
+The table below lists some common bases of eligibility for naturalization, and if applicable, how long a person eligible 
+under those provisions must have been present in the United States.  Please refer to Part 8. Time Outside the United 
+States of Form N-400 regarding what information we require about your travel history.
+Physical Presence Requirements
+Basis of Eligibility for Naturalization
+Physical Presence Requirements
+You have been a lawful permanent resident for 5 years 
+(general provision).
+30 months (913 days) during the past 5 years.
+You are the spouse of a U.S. citizen.
+18 months (548 days) during the past 3 years. 
+You were a member of the U.S. armed forces for at least 
+1 year, but did not serve during a designated period of 
+hostilities and separated from service more than 6 months 
+before applying for naturalization.
+NOTE:  Time spent outside the United States in the U.S. 
+armed forces counts as time spent in the United States.
+30 months (913 days) during the past 5 years.
+
+Form N-400 Instructions   01/20/25
+Page 19 of 29
+Basis of Eligibility for Naturalization
+Physical Presence Requirements
+You are a U.S. Government employee or contractor 
+outside the United States.
+NOTE:  You are exempt from this requirement if you 
+have an approved Form N-470.  You must have had 1 year 
+of uninterrupted physical presence before you filed Form 
+N-470.
+30 months (913 days) during the past 5 years.
+You are employed outside the United States in a religious 
+vocation.
+NOTE:  Time outside the U.S. with an approved Form 
+N-470 counts as time in the United States.  You must have 
+1 year of uninterrupted physical presence in the United 
+States before you file Form N-400.
+30 months (913 days) during the past 5 years.
+You are employed by or under contract with the Chief of 
+Mission (Department of State) or the U.S. armed forces as 
+an interpreter, translator, or in a security-related position 
+(executive or manager).
+NOTE:  Your entire period outside the United States may 
+count as physical presence in the United States if you are 
+engaged in qualifying employment for any portion of the 
+period outside the United States.
+30 months (913 days) during the past 5 years.
+You are a U.S. national.
+NOTE:  Time in American Samoa or Swains Island counts 
+as time in the United States.
+30 months (913 days) during the past 5 years.
+There is no physical presence requirement (and no requirement to file Form N-470) if you are applying as:
+1.	 A currently serving member of the U.S. armed forces or a former service member who separated from service within 6 
+months of applying for naturalization;
+2.	 A former service member who served in an active-duty status in the U.S. armed forces or as a member of the Selected 
+Reserve of the Ready Reserve during a designated period of hostilities; 
+3.	 The spouse of a U.S. citizen currently residing outside the United States, if your spouse is employed outside the U.S. 
+in a religious vocation or by the U.S. Government, an American institution of research, certain American firms or 
+corporations, or certain public international organizations; or
+4.	 An employee of a U.S. nonprofit organization that principally promotes the interests of the United States outside the 
+United States through the communications media.
+Required Evidence - Tax Transcripts
+You should bring your IRS tax transcripts to your interview, especially if you have traveled outside the United States 
+for a period that lasted more than 6 months.
+
+Form N-400 Instructions   01/20/25
+Page 20 of 29
+Part 9.  Additional Information About You
+Your answers to the questions in this Part of Form N-400 will help to determine whether you meet the standards for good 
+moral character.  Some of the questions in this Part also relate to national security, your attachment to the principles of the 
+U.S. Constitution, and other requirements for naturalization.
+Good Moral Character
+Good Moral Character (GMC) means character that measures up to the standards of average citizens of the community 
+in which the applicant resides.  In general, an applicant must show that he or she has been and continue to be a person of 
+GMC during the required period (for example, 5 years if you are applying based on 5 years as a lawful permanent resident 
+or 3 years if you are applying as the spouse of a U.S. citizen) prior to filing and up to the time of the Oath of Allegiance.  
+Item Numbers 1. - 2.  You may not qualify for naturalization if you previously claimed you were a U.S. citizen or you 
+unlawfully voted in the United States in a Federal, state, or local election.  However, voting in a local election will not 
+render an applicant ineligible for naturalization if the applicant was eligible to vote under the relevant law.
+Item Numbers 3. - 4.  If you have failed to pay taxes as required, we may determine that you lack good moral character.  
+See www.irs.gov to determine whether you were required to file a tax return.  
+Required Evidence - Taxes
+Tax transcripts are not required for every case.  If you have any Federal, state, or local taxes that are overdue, provide:
+1.	 IRS tax transcripts for the past 5 years, or 3 years if filing for naturalization on the basis of marriage to a U.S. 
+citizen;
+2.	 A signed agreement from the IRS or state or local tax office showing you have filed a tax return and have arranged 
+to pay the taxes you owe; and
+3.	 Documentation from the IRS or state or local tax office showing the current status of your repayment program.
+NOTE:  Go to www.irs.gov for information on how to obtain copies of your tax documents.
+Item Numbers 5.a. - 5.b.  Current or previous membership in certain organizations may indicate lack of good moral 
+character, unlawful admission, or lack of attachment to the principles of the U.S. Constitution or indicate that you are not 
+well disposed to the good order and happiness of the United States.  The term “world communism” means a revolutionary 
+movement, the purpose of which is to establish eventually a Communist totalitarian dictatorship in any or all the 
+countries of the world through the medium of an internationally coordinated Communist political movement.  The term 
+“Communist Party” includes the organization now known as the Communist Party of the United States of America, the 
+Communist Party of any state or foreign state or subdivision thereof, and any unit or subdivision of any such organization
+Item Numbers 15.a. - 16.  Committing certain crimes may make you ineligible for naturalization.  Report all offenses that 
+you have committed, including any offenses involving solicitation, domestic violence, or driving under the influence, any 
+offenses that have been expunged (removed from your record) or for which you received a pardon, and any offenses that 
+happened before you reached 18 years of age.  If you do not tell us about these offenses, you may be denied naturalization 
+even if the original offense was not a crime for which we would deny your application.  
+We will not approve a naturalization application while you are on probation, on parole, or under a suspended sentence.  
+You should provide court evidence showing that your probation, parole, or suspended sentence has ended.
+Crimes and Offenses Evidence 
+If any of the required records listed below are unavailable, provide original or certified confirmation that the record is 
+not available from the applicable law enforcement agency or court.  Note that unless a traffic incident was alcohol or 
+drug related, led to an arrest, or seriously injured another person, you do not need to submit documentation of traffic 
+incidents. 
+
+Form N-400 Instructions   01/20/25
+Page 21 of 29
+You may provide photocopies with your application.  You must bring originals or court-certified copies to your 
+interview.
+Crimes and Offenses Evidence
+If You Have EVER:
+You Must Provide:
+Been arrested or detained for any reason anywhere in the 
+world and NO CHARGES WERE FILED.
+1.	 An arrest report; and
+2.	 An official statement from the arresting agency or 
+applicable court confirming that no charges were filed.
+Been convicted or placed in an alternative sentence 
+program (such as diversion, deferred prosecution, withheld 
+adjudication, deferred adjudication) or rehabilitative 
+program (including a drug treatment or community service 
+program).
+1.	 The sentencing record for each incident; and
+2.	 Evidence that you completed your alternative 
+sentencing or rehabilitative programs.
+Been arrested or detained for any reason anywhere in the 
+world and CHARGES WERE FILED.
+1.	 Documentation of all arrest reports, charging 
+documents, court dispositions, sentencing reports, and 
+any other relevant documents; and
+2.	 Any additional evidence that you would like us to 
+consider concerning the circumstances of your arrests 
+or convictions.
+NOTE:  If you were sentenced to jail or prison or received 
+an alternative sentence or probation, you must also provide 
+evidence to show that you completed your period of jail, 
+prison, alternative sentence, or probation.
+Been convicted or placed in an alternative sentence 
+program (such as diversion, deferred prosecution, withheld 
+adjudication, deferred adjudication) or rehabilitative 
+program (including a drug treatment or community service 
+program).
+1.	 The sentencing record for each incident; and
+2.	 Evidence that you completed your alternative 
+sentencing or rehabilitative programs.
+Been convicted and sentenced (including if your sentence 
+was suspended, or you were placed on probation or 
+parole).
+1.	 The sentencing record for each incident; and
+2.	 Evidence that you completed your sentence, such as 
+probation or parole records.
+Had any arrest or conviction vacated, set aside, sealed, 
+expunged, or otherwise removed from your record, or 
+received a pardon.
+1.	 A motion to vacate and court order vacating, setting 
+aside, sealing, expunging, or otherwise removing the 
+arrest or conviction from your record;
+2.	 An application or petition for a pardon and final 
+decision granting your application or petition for a 
+pardon; or
+3.	 A statement from the court that no record exists of 
+your arrest or conviction.
+
+Form N-400 Instructions   01/20/25
+Page 22 of 29
+If You Have EVER:
+You Must Provide:
+Been in a traffic incident.
+Documentation of traffic incidents only if the incident:
+1.	 Involved alcohol or drugs; 
+2.	 Led to an arrest; or 
+3.	 Seriously injured another person.
+Been ordered to pay a fine, make restitution, or have your 
+wages garnished.
+1.	 Documentation of the order to pay a fine, restitution, 
+or garnish wages; and
+2.	 Documentation that you have paid the required sum or 
+evidence of current payment.
+Item Numbers 20. - 21.  If you were placed in removal, recission, or deportation proceedings or were removed or 
+deported from the United States, you must provide:  Name, Port of Entry (POE) of removal, if you departed by plane or 
+land border, and reason for removal.
+Item Numbers 22.a. - 22.c.  Almost all persons born as male who are either U.S. citizens or immigrants and are between 
+18 and 26 years of age must register with the Selective Service System.  You may visit www.sss.gov/register/immigrants/ 
+for information on your registration.
+If you refused to or knowingly and willfully did not register for the Selective Service when required, you may be unable to 
+establish an attachment to the principles of the U.S. Constitution, good moral character, and a willingness to bear arms on 
+behalf of the United States.
+If you answer “No” to Item Number 22.b. and you are:
+Then you:
+Under 26 years of age
+Must register before you apply for naturalization, and then 
+answer Item Numbers 22.b. and 22.c.
+26 years of age - 31 years of age (or 26 years of age - 29 
+years of age or above if you are applying based on being 
+the spouse of a U.S. citizen)
+Must explain why you did not register in Part 14. 
+Additional Information; and
+Provide a status information letter from the Selective 
+Service.
+31 years of age or above (or 29 years of age or above 
+if you are applying based on being the spouse of a U.S. 
+citizen)
+Do not need to provide a statement explaining why you 
+did not register or a status information letter from the 
+Selective Service.
+Required Evidence - Selective Service System 
+1.	 If you were required to, but did not register with the Selective Service System before you turned 26 years of age, 
+you must provide a status information letter from the Selective Service; and 
+2.	 A statement regarding your reasons for failing to register.
+You may visit www.sss.gov/verify/sil/ for more information about a status information letter.
+Item Numbers 23. - 29.  Provide required information about your service in the U.S. armed forces.  If you were 
+ever convicted of desertion from the U.S. armed forces during a time of war, you do not qualify for naturalization.  If 
+you applied for and received an exemption or discharge from the U.S. armed forces because you did not have lawful 
+immigration status to serve in the military, you may not be eligible for naturalization.
+
+Form N-400 Instructions   01/20/25
+Page 23 of 29
+Eligibility and Evidence for Current and Former Members of the U.S. Armed Forces
+Some applicants may qualify for naturalization based on current or previous military service.  If you are or were a 
+member of the U.S. armed forces, certain naturalization requirements may not apply to you.  See table below for specific 
+requirements based on the type of military basis for eligibility.
+Military Basis for 
+Eligibility
+Age
+Lawful Permanent 
+Resident (LPR) 
+Status
+Good Moral Character 
+Requirement
+Continuous Residence and 
+Physical Presence
+INA section 328
+•	
+At least 1 year of 
+honorable service 
+in the U.S. armed 
+forces at any time.
+•	
+If separated, all 
+separations were 
+under honorable 
+conditions.
+18 
+years of 
+age or 
+older
+LPR at the time 
+of interview on 
+the naturalization 
+application.
+5 years before filing the 
+application until the time 
+of your naturalization.
+Exempt from physical 
+presence requirements if 
+still serving in the U.S. 
+armed forces or within 6 
+months of separation.  Must 
+demonstrate continuous 
+residence during any 
+period when you were not 
+serving within the 5 years 
+immediately preceding the 
+date of filing.
+If you file 6 months or more 
+after you separate from the 
+U.S. armed forces, you must 
+show 5 years of continuous 
+residence and 30 months 
+of physical presence in 
+the United States out of 
+the 5 years immediately 
+preceding the date of filing 
+the application. 
+Honorable military service 
+during the 5-year period 
+meets the continuous 
+residence and physical 
+presence requirements in the 
+United States. 
+
+Form N-400 Instructions   01/20/25
+Page 24 of 29
+Military Basis for 
+Eligibility
+Age
+Lawful Permanent 
+Resident (LPR) 
+Status
+Good Moral Character 
+Requirement
+Continuous Residence and 
+Physical Presence
+INA section 329
+•	
+Honorable service 
+in active duty or 
+in the Selected 
+Reserve of the 
+Ready Reserve 
+of the U.S. armed 
+forces during a 
+designated period of 
+hostilities.
+•	
+If separated from 
+qualifying period of 
+service, separated 
+under honorable 
+conditions.
+Any 
+age
+Either you are an 
+LPR or you were 
+physically present at 
+the time of enlistment, 
+reenlistment, extension 
+of service, or induction 
+into the U.S. armed 
+forces:
+•	
+In the United 
+States or the Canal 
+Zone, American 
+Samoa, or Swains 
+Island; or
+•	
+On board a public 
+vessel owned or 
+operated by the 
+United States for 
+noncommercial 
+service.
+1 year before filing the 
+application until the time 
+of your naturalization.
+Exempt from the general 
+naturalization requirements 
+of continuous residence and 
+physical presence.
+You are still required to comply with the English and civics requirements.
+If you are a current member of the U.S. armed forces, you may be eligible to complete the entire naturalization process 
+outside the United States.  Visit www.uscis.gov/military/naturalization-through-military-service for more information.
+Designated Periods of Hostilities
+September 1, 1939
+-
+December 31, 1946
+June 25, 1950
+-
+July 1, 1955
+February 28, 1961
+-
+October 15, 1978
+August 2, 1990
+-
+April 11, 1991
+September 11, 2001
+-
+Present
+Required Evidence - Eligibility for Current and Former Members of the U.S. Armed Forces
+1.	 All current members of the U.S. armed forces who are applying for naturalization based on their military service 
+must submit an original or a copy of a completed Form N-426, Request for Certification of Military or Naval 
+Service.  
+Visit the USCIS website at www.uscis.gov/N-426 for more information about Form N-426.
+2.	 If you are currently serving in an active-duty status, whether inside or outside the United States, you should 
+submit a photocopy (not the original) of your official military orders.  Do not submit an original DD Form 214, 
+Certificate of Release or Discharge from Active Duty.  
+3.	 If you are currently separated from the U.S. armed forces and you are applying for naturalization based on your 
+military service, provide copies of your DD Form 214, NGB Form 22, or other official discharge document for all 
+periods of service.
+
+Form N-400 Instructions   01/20/25
+Page 25 of 29
+For additional information on eligibility requirements visit www.uscis.gov/military.  If you are a current or former 
+member of the U.S. armed forces or are a family member of a person in the U.S. armed forces, you may contact the Military 
+Help Line for information at 877-CIS-4MIL (877-247-4645) or visit www.uscis.gov/military/military-help-line.  Call 
+the Help Line if you are transferred to a new duty station after you file your Form N-400, including if you are deployed 
+outside the United States or to a vessel.
+Item Numbers 30.a. - 30.b.  Hereditary Titles and Orders of Nobility.  Most people do not have a foreign hereditary 
+title or order of nobility.  If you do have a hereditary title or order of nobility, the law requires you to renounce this title 
+as part of your naturalization ceremony to become a U.S. citizen.  In Item Number 30.b. of Form N-400 you must affirm 
+you are ready to do so.
+Item Numbers 31. - 37.  Answer questions about the Constitution, form of Government of the United States, and the Oath 
+of Allegiance to the United States.
+Oath of Allegiance
+If USCIS approves your application, you must take the Oath of Allegiance to become a U.S. citizen.  In limited cases, you 
+may take a modified Oath. 
+Modification to the Oath 
+You may request a modification to portions of the Oath requiring you to bear arms on behalf of the United States or 
+perform noncombatant service in the U.S. armed forces if you have a religious or conscientious objection to those 
+portions.  You may not request a modification to the portion of the Oath requiring you to perform work of national 
+importance under civilian direction.  You may provide, but we do not require, an attestation from an organization, a 
+witness statement, or any other evidence to support your objection to bear arms or perform noncombatant service.
+Affirmation 
+You may request to substitute the words “solemnly affirm” for the words “on oath” and omit “so help me God.”  You may 
+request this affirmation instead of an Oath for any reason without documentation.
+Oath Waiver 
+You may receive a waiver of the Oath of Allegiance if you are unable to understand or to communicate an understanding 
+of the meaning of the Oath because of a physical or developmental disability or mental impairment.  
+If you indicate that you are unable to take the Oath because of a physical or developmental disability or mental 
+impairment, see the Legal Guardian, Surrogate, or Designated Representative section in Specific Instructions by 
+Item Number, Part 2., Item Number 11. of these Instructions.
+For additional information on the Oath of Allegiance, see Policy Manual Volume 12, Citizenship and Naturalization, Part 
+J, Oath of Allegiance (available at www.uscis.gov/policy-manual/volume-12-part-j).
+Part 10.  Request for a Fee Reduction
+You may be eligible for a fee reduction.  To qualify for the reduced fee, your household income must be 
+less than or equal to 400% of the Federal Poverty Guidelines, at the time of filing, based on your household 
+size.  The Federal Poverty Guidelines are established by the Secretary of the Department of Health 
+and Human Services annually.  To obtain information on the current Federal Poverty Guidelines, visit                                              
+www.aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines.  In Part 10., indicate whether you are 
+requesting a fee reduction for Form N-400 and provide all the required information. 
+
+Form N-400 Instructions   01/20/25
+Page 26 of 29
+The head of household is the person who filed the most recent Federal tax return on which you are listed as a dependent or 
+the person who provides the majority of the household’s income.
+Required Evidence - Reduced Fee 
+1.	 A copy of each household member’s most recent Federal tax return;
+2.	 If the household member did not file a Federal tax return, or if the tax return does not properly reflect his or her 
+current income, submit copies of consecutive pay statements (stubs) for a minimum of the past month, a recent          
+Form W-2, Form SSA-1099, or employer statements on business stationery showing salary or wages paid; or
+3.	 If you are a student and not living with your mother or father or are not claimed as a dependent on your mother or 
+father’s Federal tax return, do not include your mother’s or father’s incomes.  You should only provide proof of 
+your income or documentation that shows you are not required to file a Federal or state tax return, such as proof 
+that you are a full-time student as supporting documentation.
+Part 11.  Applicant’s Contact Information, Certification, and Signature
+Item Numbers 1. - 4.  You must sign and date your application and, if applicable, provide your daytime telephone 
+number, mobile telephone number, and email address.  If you cannot undergo any part of the naturalization process 
+because of a physical or developmental disability or mental impairment, you may have a legal guardian, a surrogate, or 
+an eligible designated representative sign the naturalization application for you.  See the Legal Guardian, Surrogate, or 
+Designated Representative section in Specific Instructions by Item Number, Part 2., Item Number 11. for additional 
+information.  A stamped or typewritten name in place of a signature is not acceptable. 
+Part 12.  Interpreter’s Contact Information, Certification, and Signature
+Item Numbers 1. - 6.  If you used anyone as an interpreter to read the Instructions and questions on this application to 
+you in a language in which you are fluent, the interpreter must fill out this section and sign and date the application.
+Part 13.  Contact Information, Declaration, and Signature of the Person Preparing this Application, if Other Than 
+the Applicant
+Item Numbers 1. - 6.  The person who completed your application, if other than the applicant, must sign this section.  If 
+the same individual acted as your interpreter and your preparer, then that person should complete both Part 12. and Part 
+13.  A stamped or typewritten name in place of a signature is not acceptable. 
+Part 14.  Additional Information
+Use this space to add information that could not fit in the space provided for answers to questions throughout the form.
+Part 15.  Signature at Interview
+Do not complete this part.  The USCIS officer will ask you to complete this part at your interview.
+Part 16.  Oath of Allegiance
+Do not complete this part.  The USCIS officer will ask you to complete this part at your interview.
+See the Oath of Allegiance section in the Specific Instructions by Item Number, Part 9., Item Numbers 31. - 37. 
+section of these Instructions.  Your signature in this part only indicates that you have no objections to taking the Oath of 
+Allegiance.  It does not mean that you have taken the Oath or that you are naturalized.  If USCIS approves your Form 
+N-400 for naturalization, you must attend a naturalization ceremony and take the Oath of Allegiance to the United States.
+
+Form N-400 Instructions   01/20/25
+Page 27 of 29
+We recommend that you review your copy of your completed application before you go to your biometric 
+services appointment at a USCIS ASC.  At your appointment, USCIS will allow you to complete the application 
+process only if you are able to confirm, under penalty of perjury, that all of the information in your application is 
+complete, true, and correct.  If you are not able to make that attestation in good faith at that time, we will require you to 
+return for another appointment
+Where To File?
+Please see our website at www.uscis.gov/N-400 for the most current information about where to file this application.  
+Address Change
+You must notify USCIS of your new address within 10 days of moving from your previous residence.  For information on 
+changing your address, go to our website at www.uscis.gov/addresschange, or call the USCIS Contact Center.  
+NOTE:  Do not submit a change of address request to the USCIS Lockbox.
+Current Members of the U.S. Armed Forces
+Call the Military Help Line at 877-247-4645 if you are transferred to a new duty station after you file your Form N-400, 
+including if you are deployed outside the United States or to a vessel.
+Processing Information
+USCIS will reject any Form N-400 that is not signed or accompanied by the correct filing fee.  Form N-400 will 
+also be rejected if you use an incorrect payment method or pay more than you are required to pay.  We may also 
+reject any application that is not completed in accordance with these Instructions, is missing pages, or otherwise 
+not executed in its entirety, or is not accompanied by the required initial evidence.  If you do not provide a 
+complete and valid mailing address, USCIS may not be able to return the fee if your Form N-400 is rejected.  If 
+we reject your Form N-400, we will return the application and any fees to you and notify you why the application 
+is considered deficient.  You may correct the deficiency and refile Form N-400.  An application is not considered 
+properly filed until USCIS accepts it.
+Initial Processing.  Once USCIS accepts your application, we will check it for completeness.  If you do not properly 
+complete this application, you will not establish a basis for your eligibility and we may reject or deny your application.
+Requests for More Information.  USCIS may request that you provide more information or evidence to support your 
+application.  We may also request that you provide the originals of any copies you submit.  If we request an original 
+document from you, we will return it to you after USCIS determines it is no longer needed.
+Requests for Interview.  We will request that you appear for an interview based on your application.  During your 
+interview, USCIS may require you to provide your biometrics to verify your identity and update background and security 
+checks.
+Decision.  The decision on Form N-400 involves a determination of whether you have established eligibility for the 
+immigration benefit you are seeking.  USCIS will notify you of our decision in writing.  
+
+Form N-400 Instructions   01/20/25
+Page 28 of 29
+USCIS Forms and Information
+To ensure you are using the latest version of this application, visit www.uscis.gov. 
+Penalties
+If you knowingly and willfully falsify or conceal a material fact or submit a false document with your Form N-400, 
+we will deny your application and may deny any other immigration benefit.  In addition, you will face severe penalties 
+provided by law and may be subject to criminal prosecution.
+USCIS Compliance Review and Monitoring
+By signing this application, you have stated under penalty of perjury (28 U.S.C. section 1746) that all information and 
+documentation submitted with this application are complete, true, and correct.  You also authorize the release of any 
+information from your records that USCIS may need to determine your eligibility for the immigration benefit you are 
+seeking and consent to USCIS verifying such information.
+DHS has the authority to verify any information you submit to establish eligibility for the immigration benefit you are 
+seeking at any time.  Our legal authority to verify this information is in INA sections 103, 316, 319, 325, 328, 329, 332, 
+335, and 336; and 8 CFR Parts 103, 316, 332, 335, and 336.  To ensure compliance with applicable laws and authorities, 
+we may verify information before or after your case is decided.
+Agency verification methods may include, but are not limited to:  reviewing public records and information; contacting 
+through written correspondence; using the internet, fax, other electronic transmission, or telephone; making unannounced 
+physical site inspections of residences and locations of employment; and interviewing people.  USCIS will use the 
+information we obtain to assess your compliance with the laws and to determine your eligibility for an immigration 
+benefit.
+Subject to the restrictions under 8 CFR 103.2(b)(16), USCIS will provide you with an opportunity to address any adverse 
+or derogatory information that may result from a compliance review, verification, or site visit before a decision is made 
+on your request.  For a visit after your request is approved, USCIS will provide you with an opportunity to address any 
+adverse or derogatory information which may result in revocation or termination of an approval.
+DHS Privacy Notice
+AUTHORITIES:  The information requested on this application, and the associated evidence, under the INA sections 
+103, 316, 319, 325, 328, 329, 332, 334, 335, and 336.
+PURPOSE:  The primary purpose for providing the requested information on this application is to determine if you have 
+established eligibility for naturalization.  DHS uses the information you provide to grant or deny the immigration benefit 
+you are seeking.  DHS may also use the information you provide to determine your eligibility for any public recognition 
+program at the discretion of the agency.  For this purpose, your information will not be made public without your consent.
+DISCLOSURE:  The information you provide is voluntary.  However, failure to provide the requested information, 
+including your Social Security number (if applicable), and any requested evidence, may delay a final decision or result in 
+denial of your application.
+
+Form N-400 Instructions   01/20/25
+Page 29 of 29
+ROUTINE USES:  DHS may share the information you provide on this application and any additional requested 
+evidence with other Federal, state, local, and foreign government agencies and authorized organizations.  DHS follows 
+approved routine uses described in the associated published system of records notices [DHS/USCIS-001 - Alien File, 
+Index, and National File Tracking System, DHS/USCIS-007 - Benefits Information System, and DHS/USCIS-018 
+Immigration Biometric and Background Check System and the Privacy Impact Assessments DHS/USCIS/PIA-003 
+Integrated Digitization Document Management Program, DHS/USCIS/PIA-056 USCIS Electronic Immigration System 
+(USCIS ELIS), and DHS/USCIS/PIA-071 myUSCIS Account Experience], which you can find at www.dhs.gov/privacy.  
+DHS may also share this information, as appropriate, for law enforcement purposes or in the interest of national security.
+Social Security Administration Privacy Act Statement 
+SSA Privacy Act Statement Sections 205(c) and 702 of the Social Security Act authorizes SSA to collect information 
+to assign you an SSN and issue a Social Security card.  The information you furnish on this application is voluntary.
+However, failure to provide the requested information may prevent SSA from issuing you an SSN and Social Security 
+card.  SSA will maintain the information used to assign you an SSN and issue you a Social Security card in SSA’s system 
+of records [Master Files of Social Security Number (SSN) Holders and SSN Applications, 60-0058].  Complete lists of 
+approved routine uses for the information used to assign you an SSN and issue you a Social Security card are available in 
+the System of Records Notice 60-0058, available at www.ssa.gov. 
+FBI Privacy Notice
+USCIS may use your biometrics to obtain the criminal history records of the Federal Bureau of Investigation (FBI), 
+for identity verification, to determine eligibility, to create immigration documents (for example, Permanent Resident 
+Card, Employment Authorization Document), or any purpose authorized by the Immigration and Nationality Act.  
+You may obtain a copy of your own FBI record using the procedures outlined at 28 CFR 16.30-16.34.  For more 
+information, please visit:  https://www.fbi.gov/services/cjis/compact-council/guiding-principles-noncriminal-
+justice-applicants-privacy-rights.  For information regarding how the FBI will use your fingerprints, please visit                     
+https://www.fbi.gov/services/cjis/compact-council/privacy-act-statement.
+Paperwork Reduction Act
+We may not conduct or sponsor an information collection, and you are not required to respond to a collection of 
+information, unless it displays a currently valid Office of Management and Budget (OMB) control number.  The public 
+reporting burden for this collection of information is estimated at 8.547 hours per response, including the time for 
+reviewing instructions, gathering the required documentation and information, completing the application, preparing 
+statements, attaching necessary documentation, and submitting the application.  The collection of biometrics is estimated 
+to require 1 hour and 10 minutes.  Send comments regarding this burden estimate or any other aspect of this collection 
+of information, including suggestions for reducing this burden, to:  U.S. Citizenship and Immigration Services, Office of 
+Policy and Strategy, Regulatory Coordination Division, 5900 Capital Gateway Drive, Mail Stop #2140, Camp Springs, 
+MD 20588-0009; OMB No. 1615-0052.  Do not mail your completed Form N-400 to this address.

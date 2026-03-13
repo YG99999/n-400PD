@@ -1,0 +1,59 @@
+{
+    "tools": [
+        {
+            "type": "client",
+            "config": "tool_configs\\get_form_state.json",
+            "id": "tool_0101kkjm300pfp5bmcrtmyx2b1sx"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\update_form_fields.json",
+            "id": "tool_2901kkjm69qxepq8cvp078rk9ebm"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\mark_section_complete.json",
+            "id": "tool_7001kkjm6fhqek78cc64gd2y0c2g"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\reopen_section.json",
+            "id": "tool_2401kkjm6nkqezt9wqa8eqjv8jke"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\run_readiness_check.json",
+            "id": "tool_0301kkjm6vezfx4bknpqk4hm6rjd"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\transition_to_review.json",
+            "id": "tool_6501kkjm71g9e70smhykqhc5d08c"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\transition_to_payment.json",
+            "id": "tool_3201kkjm77dqfnqvn46p9abewaba"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\switch_to_text_mode.json",
+            "id": "tool_2001kkjm7de9f9hrdwyytfzm7szn"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\navigate_to_review.json",
+            "id": "tool_1301kkjm7kbqfrnr3tn1xgy7sxns"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\navigate_to_payment.json",
+            "id": "tool_9501kkjm7s69efxank02bjtnhxgm"
+        },
+        {
+            "type": "client",
+            "config": "tool_configs\\show_missing_fields.json",
+            "id": "tool_5501kkjm7z8tee8tmy9d3a8pd594"
+        }
+    ]
+}

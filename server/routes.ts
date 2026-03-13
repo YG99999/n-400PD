@@ -6,12 +6,15 @@ import { randomUUID } from "crypto";
 import { spawnSync } from "child_process";
 import { storage } from "./storage";
 import { getInitialMessage } from "./conversation";
-import { processAssistantTurn } from "./assistantRuntime";
+import { executeAssistantToolCall, processAssistantTurn } from "./assistantRuntime";
 import {
   accountPreferenceSchema,
   accountRequestCreateSchema,
   chatRequestSchema,
   createEmptyWorkflowState,
+  elevenLabsSessionRequestSchema,
+  elevenLabsToolRequestSchema,
+  elevenLabsTranscriptPersistRequestSchema,
   formSaveRequestSchema,
   paymentRequestSchema,
   reviewListItemAddSchema,
@@ -37,6 +40,15 @@ import { documentJobs } from "./documentJobs";
 import { canUseLocalStorage, config, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
 import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
+import { summarizeScope } from "./assistantCatalog";
+import {
+  buildElevenLabsAgentPrompt,
+  buildElevenLabsDynamicVariables,
+  buildElevenLabsFirstMessage,
+  createElevenLabsConversationToken,
+  mapTranscriptMessage,
+  verifyElevenLabsWebhookSignature,
+} from "./elevenlabs";
 
 const OUTPUT_DIR = path.resolve("generated_pdfs");
 const PDF_DIR = path.resolve(import.meta.dirname, "pdf");
@@ -213,6 +225,18 @@ async function getAuthedUserSession(userId: string, sessionId?: string) {
 
 function getAuthenticatedUserId(req: AuthenticatedRequest) {
   return req.authUser?.id ?? req.session.userId;
+}
+
+async function persistTranscriptMessageIfMissing(sessionId: string, message: ChatMessage) {
+  const session = await storage.getSession(sessionId);
+  if (!session) {
+    throw new Error("Session not found");
+  }
+
+  const exists = session.messages.some((existing) => existing.id === message.id);
+  if (!exists) {
+    await storage.addMessage(sessionId, message);
+  }
 }
 
 export async function registerRoutes(
@@ -498,6 +522,160 @@ export async function registerRoutes(
       metadata: { category: body.category, sessionId: body.sessionId },
     });
     return res.status(201).json({ ticket });
+  });
+
+  app.post("/api/elevenlabs/session", requireAuth, async (req, res) => {
+    try {
+      const userId = getAuthenticatedUserId(req);
+      if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+      const body = elevenLabsSessionRequestSchema.parse(req.body);
+      const requestUser = await storage.getUser(userId);
+      const session = await getAuthedUserSession(userId, body.formSessionId);
+      const workflowState = refreshWorkflowState(session);
+      await storage.updateSession(session.id, { workflowState });
+      const refreshedSession = (await storage.getSession(session.id)) ?? {
+        ...session,
+        workflowState,
+      };
+
+      const conversationToken = await createElevenLabsConversationToken();
+      return res.json({
+        conversationToken,
+        serverLocation: config.elevenLabsServerLocation,
+        agentId: config.elevenLabsAgentId,
+        formSessionId: refreshedSession.id,
+        currentSection: refreshedSession.currentSection,
+        workflowMode: refreshedSession.workflowState.mode,
+        readyForReview: refreshedSession.workflowState.readyForReview,
+        missingFields: refreshedSession.workflowState.lastReadiness?.missingFields ?? [],
+        supportedScopeSummary: JSON.stringify(summarizeScope(refreshedSession.formData)),
+        existingTranscript: refreshedSession.messages.map(mapTranscriptMessage),
+        prompt: buildElevenLabsAgentPrompt(refreshedSession, requestUser),
+        firstMessage: buildElevenLabsFirstMessage(refreshedSession),
+        dynamicVariables: buildElevenLabsDynamicVariables(refreshedSession, requestUser),
+        preferredMode: body.mode ?? "voice",
+      });
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/elevenlabs/tool", requireAuth, async (req, res) => {
+    try {
+      const userId = getAuthenticatedUserId(req);
+      if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+      const body = elevenLabsToolRequestSchema.parse(req.body);
+      const session = await getAuthedUserSession(userId, body.formSessionId);
+      const workingSession = (await storage.getSession(session.id)) ?? session;
+
+      const result = executeAssistantToolCall(
+        body.toolName,
+        body.arguments,
+        {
+          formData: cloneFormData(workingSession.formData),
+          workflowState: refreshWorkflowState(workingSession),
+          currentSection: workingSession.currentSection,
+          paymentStatus: workingSession.paymentStatus,
+          pdfUrl: workingSession.pdfUrl,
+        },
+        {},
+      );
+
+      const nextState = result.workflowState;
+      const sessionUpdate = {
+        formData: result.updatedFormData,
+        currentSection: result.currentSection,
+        workflowState: nextState,
+      } as const;
+
+      if (body.toolName === "transition_to_review" && result.event.status === "completed") {
+        await storage.updateSession(session.id, {
+          ...sessionUpdate,
+          status: "review",
+        });
+      } else {
+        await storage.updateSession(session.id, sessionUpdate);
+      }
+
+      await storage.createAuditEvent({
+        userId,
+        action: `elevenlabs.tool.${body.toolName}`,
+        targetType: "application_session",
+        targetId: session.id,
+        metadata: {
+          conversationId: body.conversationId,
+          status: result.event.status,
+          output: result.output,
+        },
+      });
+
+      return res.json({
+        ok: result.event.status === "completed",
+        tool: body.toolName,
+        currentSection: result.currentSection,
+        workflowState: result.workflowState,
+        readiness: result.workflowState.lastReadiness,
+        result: result.output,
+      });
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/elevenlabs/messages", requireAuth, async (req, res) => {
+    try {
+      const userId = getAuthenticatedUserId(req);
+      if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+      const body = elevenLabsTranscriptPersistRequestSchema.parse(req.body);
+      const session = await getAuthedUserSession(userId, body.formSessionId);
+      const message: ChatMessage = {
+        id: body.message.id,
+        role: body.message.role,
+        content: body.message.content,
+        timestamp: body.message.timestamp,
+        section: body.message.section ?? session.currentSection,
+        modality: body.message.modality,
+        conversationId: body.message.conversationId,
+      };
+      await persistTranscriptMessageIfMissing(session.id, message);
+      return res.status(201).json({ success: true });
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/elevenlabs/webhook", async (req, res) => {
+    try {
+      const rawBody = Buffer.isBuffer(req.rawBody) ? req.rawBody.toString("utf8") : JSON.stringify(req.body ?? {});
+      const isValid = verifyElevenLabsWebhookSignature(rawBody, req.headers["x-elevenlabs-signature"]);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid ElevenLabs webhook signature" });
+      }
+
+      const payload = req.body as Record<string, unknown>;
+      const sessionId = typeof payload.formSessionId === "string"
+        ? payload.formSessionId
+        : typeof payload.session_id === "string"
+          ? payload.session_id
+          : undefined;
+
+      await storage.createAuditEvent({
+        action: "elevenlabs.webhook.received",
+        targetType: "elevenlabs_webhook",
+        targetId: typeof payload.conversation_id === "string" ? payload.conversation_id : undefined,
+        metadata: {
+          sessionId,
+          payload,
+        },
+      });
+
+      return res.json({ received: true });
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
   });
 
   app.post("/api/chat", requireAuth, rateLimit({ key: "chat", windowMs: 60_000, max: 120 }), async (req, res) => {

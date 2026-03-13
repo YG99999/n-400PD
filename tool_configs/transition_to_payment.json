@@ -1,0 +1,19 @@
+{
+  "name": "transition_to_payment",
+  "description": "Check whether the current CitizenFlow session is ready to move into the payment handoff.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "summary": {
+        "type": "string",
+        "description": "Optional short summary explaining why payment handoff is being attempted."
+      }
+    }
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

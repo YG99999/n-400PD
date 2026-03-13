@@ -238,11 +238,23 @@ export interface ToolEvent {
     | "mark_section_complete"
     | "reopen_section"
     | "run_readiness_check"
-    | "transition_to_review";
+    | "transition_to_review"
+    | "transition_to_payment";
   status: "completed" | "rejected";
   payload: Record<string, unknown>;
   createdAt: string;
 }
+
+export type ConversationMode = "voice" | "text";
+export type AgentStatus =
+  | "idle"
+  | "connecting"
+  | "ready"
+  | "listening"
+  | "thinking"
+  | "speaking"
+  | "reconnecting"
+  | "error";
 
 export interface ReviewEdit {
   id: string;
@@ -277,6 +289,8 @@ export interface ChatMessage {
   section?: Section;
   extractedFields?: Record<string, unknown>;
   toolEvents?: ToolEvent[];
+  modality?: ConversationMode;
+  conversationId?: string;
 }
 
 // ── Form session ──
@@ -321,6 +335,36 @@ export const chatRequestSchema = z.object({
   conversationStep: z.string().optional(),
 });
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
+
+export const elevenLabsSessionRequestSchema = z.object({
+  formSessionId: z.string(),
+  mode: z.enum(["voice", "text"]).optional(),
+});
+export type ElevenLabsSessionRequest = z.infer<typeof elevenLabsSessionRequestSchema>;
+
+export const elevenLabsToolRequestSchema = z.object({
+  formSessionId: z.string(),
+  toolName: z.string().min(1),
+  arguments: z.record(z.string(), z.unknown()).default({}),
+  conversationId: z.string().optional(),
+});
+export type ElevenLabsToolRequest = z.infer<typeof elevenLabsToolRequestSchema>;
+
+export const elevenLabsTranscriptMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(5000),
+  timestamp: z.string(),
+  section: z.enum(SECTIONS).optional(),
+  modality: z.enum(["voice", "text"]).default("voice"),
+  conversationId: z.string().optional(),
+});
+
+export const elevenLabsTranscriptPersistRequestSchema = z.object({
+  formSessionId: z.string(),
+  message: elevenLabsTranscriptMessageSchema,
+});
+export type ElevenLabsTranscriptPersistRequest = z.infer<typeof elevenLabsTranscriptPersistRequestSchema>;
 
 export const reviewScalarUpdateSchema = z.object({
   formSessionId: z.string(),

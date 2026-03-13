@@ -1,0 +1,27 @@
+{
+  "name": "reopen_section",
+  "description": "Reopen a section when the user changes an answer, spots a mistake, or adds missing information that belongs to an earlier part of the N-400 flow.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "section": {
+        "type": "string",
+        "description": "The section to reopen. One of INTRO, PERSONAL_INFO, RESIDENCE_HISTORY, FAMILY_INFO, EMPLOYMENT, TRAVEL, MORAL_CHARACTER, OATH, or REVIEW."
+      },
+      "reason": {
+        "type": "string",
+        "description": "Why the section needs to be reopened."
+      }
+    },
+    "required": [
+      "section",
+      "reason"
+    ]
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

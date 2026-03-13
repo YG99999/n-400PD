@@ -1,0 +1,27 @@
+{
+  "name": "mark_section_complete",
+  "description": "Ask CitizenFlow to mark a section complete only after all required supported fields in that section have been collected confidently.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "section": {
+        "type": "string",
+        "description": "The section to complete. One of INTRO, PERSONAL_INFO, RESIDENCE_HISTORY, FAMILY_INFO, EMPLOYMENT, TRAVEL, MORAL_CHARACTER, OATH, or REVIEW."
+      },
+      "summary": {
+        "type": "string",
+        "description": "A one-sentence summary of what was collected in this section."
+      }
+    },
+    "required": [
+      "section",
+      "summary"
+    ]
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

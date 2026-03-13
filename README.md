@@ -37,6 +37,8 @@ Set these values in your environment or `.env` before running production-style c
 - `APP_URL`
 - `PAYMENT_AMOUNT_CENTS`
 - `SUPPORTED_USCIS_EDITION`
+- `ELEVENLABS_API_KEY`
+- `ELEVENLABS_AGENT_ID`
 
 Run the app:
 
@@ -84,6 +86,7 @@ It runs:
 - [Launch checklist](C:/Users/ynger/Downloads/n400-citizenflow-project/docs/LAUNCH_CHECKLIST.md)
 - [Operations runbook](C:/Users/ynger/Downloads/n400-citizenflow-project/docs/OPS_RUNBOOK.md)
 - [Security baseline](C:/Users/ynger/Downloads/n400-citizenflow-project/docs/SECURITY_BASELINE.md)
+- [ElevenLabs agent setup](C:/Users/ynger/Downloads/n400-citizenflow-project/docs/ELEVENLABS_AGENT_SETUP.md)
 
 ## Current launch boundary
 

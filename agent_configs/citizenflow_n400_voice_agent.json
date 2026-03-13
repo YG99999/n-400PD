@@ -1,0 +1,245 @@
+{
+  "name": "CitizenFlow N-400 Voice Intake",
+  "conversation_config": {
+    "asr": {
+      "quality": "high",
+      "provider": "elevenlabs",
+      "user_input_audio_format": "pcm_16000",
+      "keywords": [
+        "USCIS",
+        "N-400",
+        "A-number",
+        "Naturalization",
+        "Green Card"
+      ]
+    },
+    "turn": {
+      "turn_timeout": 8,
+      "silence_end_call_timeout": -1,
+      "mode": "turn"
+    },
+    "tts": {
+      "model_id": "eleven_turbo_v2",
+      "voice_id": "cjVigY5qzO86Huf0OWal",
+      "supported_voices": [],
+      "agent_output_audio_format": "pcm_16000",
+      "optimize_streaming_latency": 3,
+      "stability": 0.4,
+      "speed": 0.96,
+      "similarity_boost": 0.8,
+      "pronunciation_dictionary_locators": []
+    },
+    "conversation": {
+      "text_only": false,
+      "max_duration_seconds": 1800,
+      "client_events": [
+        "audio",
+        "interruption"
+      ]
+    },
+    "language_presets": {},
+    "agent": {
+      "first_message": "Hi, I'm CitizenFlow. I'll help you complete your N-400 one step at a time, and you can talk or switch to typing whenever you want.",
+      "language": "en",
+      "dynamic_variables": {
+        "dynamic_variable_placeholders": {}
+      },
+      "prompt": {
+        "prompt": "You are CitizenFlow's calm, voice-first N-400 intake guide. Your job is to help the user complete the supported parts of the USCIS Form N-400 accurately and patiently. Ask one focused question at a time. Use plain language. Never invent facts. Confirm sensitive details like names, dates, A-numbers, SSNs, and addresses before saving them. Use get_form_state before deciding what to ask next whenever context might be stale. Use update_form_fields once information is clear enough to store. Use run_readiness_check before transitions. Use transition_to_review only when the application is ready for review. If the user asks to type or seems frustrated with speech capture, call switch_to_text_mode. If the user mentions arrests, crimes, removal, false claims to citizenship, long trips, tax problems, selective service issues, fraud, or any situation with legal risk, stay factual, collect only the supported form data, and recommend review by an immigration attorney or accredited representative. Do not promise eligibility or approval. Follow official USCIS N-400 instructions and the attached CitizenFlow knowledge base.",
+        "llm": "gemini-2.5-flash",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "tool_ids": [
+          "tool_0101kkjm300pfp5bmcrtmyx2b1sx",
+          "tool_2901kkjm69qxepq8cvp078rk9ebm",
+          "tool_7001kkjm6fhqek78cc64gd2y0c2g",
+          "tool_2401kkjm6nkqezt9wqa8eqjv8jke",
+          "tool_0301kkjm6vezfx4bknpqk4hm6rjd",
+          "tool_6501kkjm71g9e70smhykqhc5d08c",
+          "tool_3201kkjm77dqfnqvn46p9abewaba",
+          "tool_2001kkjm7de9f9hrdwyytfzm7szn",
+          "tool_1301kkjm7kbqfrnr3tn1xgy7sxns",
+          "tool_9501kkjm7s69efxank02bjtnhxgm",
+          "tool_5501kkjm7z8tee8tmy9d3a8pd594"
+        ],
+        "mcp_server_ids": [],
+        "native_mcp_server_ids": [],
+        "knowledge_base": [
+          {
+            "id": "6kFlrYCcIKvsXlljkcr3",
+            "type": "text",
+            "name": "CitizenFlow N400 Official Requirements"
+          },
+          {
+            "id": "1Ng2KLvgOBHIviZCqSNm",
+            "type": "text",
+            "name": "CitizenFlow N400 Supported Scope"
+          },
+          {
+            "id": "MRQeTSISSmt02AnQMFTn",
+            "type": "text",
+            "name": "CitizenFlow N400 Field Guide"
+          }
+        ],
+        "ignore_default_personality": true,
+        "rag": {
+          "enabled": true,
+          "embedding_model": "e5_mistral_7b_instruct",
+          "max_vector_distance": 0.55,
+          "max_documents_length": 50000,
+          "max_retrieved_rag_chunks_count": 12
+        },
+        "custom_llm": null
+      }
+    }
+  },
+  "platform_settings": {
+    "auth": {
+      "enable_auth": true,
+      "allowlist": [],
+      "shareable_token": null
+    },
+    "evaluation": {
+      "criteria": []
+    },
+    "widget": {
+      "variant": "full",
+      "placement": "bottom-right",
+      "expandable": "never",
+      "avatar": {
+        "type": "orb",
+        "color_1": "#1c6bd8",
+        "color_2": "#d7f2f1"
+      },
+      "feedback_mode": "none",
+      "bg_color": "#ffffff",
+      "text_color": "#111827",
+      "btn_color": "#111827",
+      "btn_text_color": "#ffffff",
+      "border_color": "#d1d5db",
+      "focus_color": "#1c6bd8",
+      "shareable_page_show_terms": true,
+      "show_avatar_when_collapsed": false,
+      "disable_banner": false,
+      "mic_muting_enabled": false,
+      "transcript_enabled": true,
+      "text_input_enabled": true,
+      "text_contents": {
+        "main_label": null,
+        "start_call": null,
+        "new_call": null,
+        "end_call": null,
+        "mute_microphone": null,
+        "change_language": null,
+        "collapse": null,
+        "expand": null,
+        "copied": null,
+        "accept_terms": null,
+        "dismiss_terms": null,
+        "listening_status": null,
+        "speaking_status": null,
+        "connecting_status": null,
+        "input_label": null,
+        "input_placeholder": null,
+        "user_ended_conversation": null,
+        "agent_ended_conversation": null,
+        "conversation_id": null,
+        "error_occurred": null,
+        "copy_id": null
+      },
+      "language_selector": false,
+      "supports_text_only": true,
+      "language_presets": {},
+      "styles": {
+        "base": null,
+        "base_hover": null,
+        "base_active": null,
+        "base_border": null,
+        "base_subtle": null,
+        "base_primary": null,
+        "base_error": null,
+        "accent": null,
+        "accent_hover": null,
+        "accent_active": null,
+        "accent_border": null,
+        "accent_subtle": null,
+        "accent_primary": null,
+        "overlay_padding": null,
+        "button_radius": null,
+        "input_radius": null,
+        "bubble_radius": null,
+        "sheet_radius": null,
+        "compact_sheet_radius": null,
+        "dropdown_sheet_radius": null
+      },
+      "border_radius": null,
+      "btn_radius": null,
+      "action_text": null,
+      "start_call_text": null,
+      "end_call_text": null,
+      "expand_text": null,
+      "listening_text": null,
+      "speaking_text": null,
+      "shareable_page_text": null,
+      "terms_text": null,
+      "terms_html": null,
+      "terms_key": null,
+      "override_link": null,
+      "custom_avatar_path": null
+    },
+    "data_collection": {},
+    "overrides": {
+      "conversation_config_override": {
+        "tts": {
+          "voice_id": false
+        },
+        "conversation": {
+          "text_only": true
+        },
+        "agent": {
+          "first_message": true,
+          "language": false,
+          "prompt": {
+            "prompt": true
+          }
+        }
+      },
+      "custom_llm_extra_body": false,
+      "enable_conversation_initiation_client_data_from_webhook": false
+    },
+    "call_limits": {
+      "agent_concurrency_limit": -1,
+      "daily_limit": 100000,
+      "bursting_enabled": true
+    },
+    "privacy": {
+      "record_voice": false,
+      "retention_days": 30,
+      "delete_transcript_and_pii": false,
+      "delete_audio": true,
+      "apply_to_existing_conversations": false,
+      "zero_retention_mode": false
+    },
+    "workspace_overrides": {
+      "webhooks": {
+        "post_call_webhook_id": null
+      },
+      "conversation_initiation_client_data_webhook": null
+    },
+    "safety": {
+      "is_blocked_ivc": false,
+      "is_blocked_non_ivc": false,
+      "ignore_safety_evaluation": false
+    },
+    "testing": {
+      "attached_tests": []
+    },
+    "ban": null
+  },
+  "tags": [
+    "citizenflow",
+    "n400",
+    "immigration-intake",
+    "voice-first"
+  ]
+}

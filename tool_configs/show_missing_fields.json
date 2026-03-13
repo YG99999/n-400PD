@@ -1,0 +1,14 @@
+{
+  "name": "show_missing_fields",
+  "description": "Expand the missing-fields panel in the client so the user can see what information still needs to be collected.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}

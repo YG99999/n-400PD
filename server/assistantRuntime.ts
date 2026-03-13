@@ -32,6 +32,15 @@ interface AssistantTurnResult {
 }
 
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const BACKEND_ONLY_TOOLS = new Set(["transition_to_payment"]);
+
+export interface AssistantToolExecutionResult {
+  output: Record<string, unknown> | ReadinessStatus;
+  workflowState: WorkflowState;
+  currentSection: Section;
+  event: ToolEvent;
+  updatedFormData: N400FormData;
+}
 
 export async function processAssistantTurn(
   session: FormSession,
@@ -219,14 +228,17 @@ async function runOpenAiAssistantTurn(
 
       for (const toolCall of message.tool_calls) {
         const args = safeJsonParse(toolCall.function.arguments);
-        const result = executeToolCall(
+        const result = executeAssistantToolCall(
           toolCall.function.name,
           args,
-          workingForm,
-          workingWorkflow,
-          currentSection,
+          {
+            formData: workingForm,
+            workflowState: workingWorkflow,
+            currentSection,
+            paymentStatus: session.paymentStatus,
+            pdfUrl: session.pdfUrl,
+          },
           extractedFields,
-          session,
         );
         workingWorkflow = result.workflowState;
         currentSection = result.currentSection;
@@ -272,20 +284,15 @@ async function runOpenAiAssistantTurn(
   throw new Error("Assistant exceeded tool loop limit.");
 }
 
-function executeToolCall(
+export function executeAssistantToolCall(
   name: string,
   args: Record<string, unknown>,
-  formData: N400FormData,
-  workflowState: WorkflowState,
-  currentSection: Section,
+  session: Pick<FormSession, "formData" | "workflowState" | "currentSection" | "paymentStatus" | "pdfUrl">,
   extractedFields: Record<string, unknown>,
-  session: Pick<FormSession, "paymentStatus" | "pdfUrl">,
-): {
-  output: Record<string, unknown> | ReadinessStatus;
-  workflowState: WorkflowState;
-  currentSection: Section;
-  event: ToolEvent;
-} {
+): AssistantToolExecutionResult {
+  const formData = session.formData;
+  const workflowState = session.workflowState;
+  const currentSection = session.currentSection;
   const updatedWorkflow = { ...workflowState, toolEvents: [...workflowState.toolEvents] };
   switch (name) {
     case "get_form_state": {
@@ -301,6 +308,7 @@ function executeToolCall(
         workflowState: updatedWorkflow,
         currentSection,
         event: createToolEvent("get_form_state", "completed", output),
+        updatedFormData: formData,
       };
     }
     case "update_form_fields": {
@@ -324,6 +332,7 @@ function executeToolCall(
         workflowState: refreshed,
         currentSection,
         event: createToolEvent("update_form_fields", "completed", { updates }),
+        updatedFormData: formData,
       };
     }
     case "mark_section_complete": {
@@ -348,6 +357,7 @@ function executeToolCall(
             section,
             missingFields: refreshed.sectionStates[section].missingFields,
           }),
+          updatedFormData: formData,
         };
       }
       refreshed.sectionStates[section] = {
@@ -362,6 +372,7 @@ function executeToolCall(
         workflowState: refreshed,
         currentSection: nextSection,
         event: createToolEvent("mark_section_complete", "completed", { section, nextSection }),
+        updatedFormData: formData,
       };
     }
     case "reopen_section": {
@@ -389,6 +400,7 @@ function executeToolCall(
         workflowState: refreshed,
         currentSection: section,
         event: createToolEvent("reopen_section", "completed", { section, reason: args.reason }),
+        updatedFormData: formData,
       };
     }
     case "run_readiness_check": {
@@ -404,6 +416,7 @@ function executeToolCall(
         workflowState: refreshed,
         currentSection,
         event: createToolEvent("run_readiness_check", "completed", (refreshed.lastReadiness || {}) as Record<string, unknown>),
+        updatedFormData: formData,
       };
     }
     case "transition_to_review": {
@@ -428,6 +441,7 @@ function executeToolCall(
             missingFields: readinessChecked.lastReadiness?.missingFields ?? [],
             errors: readinessChecked.lastReadiness?.errors ?? [],
           }),
+          updatedFormData: formData,
         };
       }
       const refreshed = refreshWorkflowState({
@@ -448,6 +462,45 @@ function executeToolCall(
         workflowState: refreshed,
         currentSection: "REVIEW",
         event: createToolEvent("transition_to_review", "completed", { summary: args.summary }),
+        updatedFormData: formData,
+      };
+    }
+    case "transition_to_payment": {
+      const readinessChecked = refreshWorkflowState({
+        formData,
+        paymentStatus: session.paymentStatus,
+        pdfUrl: session.pdfUrl,
+        workflowState: updatedWorkflow,
+        currentSection,
+      });
+      if (!readinessChecked.lastReadiness?.eligibleForPayment) {
+        return {
+          output: {
+            rejected: true,
+            reason: "payment_not_ready",
+            readiness: readinessChecked.lastReadiness,
+          },
+          workflowState: readinessChecked,
+          currentSection,
+          event: createToolEvent("transition_to_payment", "rejected", {
+            reason: "payment_not_ready",
+            missingFields: readinessChecked.lastReadiness?.missingFields ?? [],
+            errors: readinessChecked.lastReadiness?.errors ?? [],
+          }),
+          updatedFormData: formData,
+        };
+      }
+      return {
+        output: {
+          redirect: "payment",
+          eligibleForPayment: true,
+        },
+        workflowState: readinessChecked,
+        currentSection: "REVIEW",
+        event: createToolEvent("transition_to_payment", "completed", {
+          eligibleForPayment: true,
+        }),
+        updatedFormData: formData,
       };
     }
     default:
@@ -456,8 +509,13 @@ function executeToolCall(
         workflowState: updatedWorkflow,
         currentSection,
         event: createToolEvent("get_form_state", "rejected", { name }),
+        updatedFormData: formData,
       };
   }
+}
+
+export function isBackendAssistantTool(name: string) {
+  return !BACKEND_ONLY_TOOLS.has(name) || name === "transition_to_payment";
 }
 
 function buildSystemPrompt(session: FormSession, workflowState: WorkflowState) {

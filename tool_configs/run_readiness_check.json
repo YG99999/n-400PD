@@ -1,0 +1,15 @@
+{
+  "name": "run_readiness_check",
+  "description": "Check whether the current CitizenFlow session is ready for review or payment based on the fields already collected.",
+  "type": "client",
+  "expects_response": true,
+  "response_timeout_secs": 30,
+  "parameters": {
+    "type": "object",
+    "description": "No parameters are required.",
+    "properties": {}
+  },
+  "dynamic_variables": {
+    "dynamic_variable_placeholders": {}
+  }
+}
