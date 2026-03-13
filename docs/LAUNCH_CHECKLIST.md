@@ -9,6 +9,7 @@
 ## Operations
 
 - Set `SESSION_SECRET`, `APP_URL`, `PAYMENT_AMOUNT_CENTS`, `SUPPORTED_USCIS_EDITION`, Supabase keys, and Stripe keys including `STRIPE_PRICE_ID`.
+- Set `PUBLIC_DEMO_ENABLED=false`, `SECURE_COOKIES=true`, `INLINE_DOCUMENT_PROCESSING=false`, `ALLOW_PRODUCTION_FALLBACKS=false`, and `ALLOW_LOCAL_STORAGE_IN_PRODUCTION=false`.
 - Run `npm run check`.
 - Run `npm run health:check`.
 - Run `npm run test:ui`.
@@ -18,6 +19,8 @@
 
 - Use a non-default `SESSION_SECRET`.
 - Enable `SECURE_COOKIES=true` in production.
+- Keep public demo disabled in production.
+- Keep production fallbacks disabled so missing Stripe/Supabase config fails closed.
 - Restrict access to deployment secrets.
 - Confirm generated documents and `.data` are backed up and access controlled.
 

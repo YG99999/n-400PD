@@ -42,6 +42,12 @@ const output = {
   },
   supabaseConfigured: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
   stripeConfigured: Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_ID && process.env.STRIPE_WEBHOOK_SECRET),
+  productionSafety: {
+    secureCookies: process.env.NODE_ENV !== "production" || process.env.SECURE_COOKIES === "true",
+    publicDemoDisabled: process.env.NODE_ENV !== "production" || process.env.PUBLIC_DEMO_ENABLED !== "true",
+    productionFallbacksDisabled: process.env.ALLOW_PRODUCTION_FALLBACKS !== "true",
+    localStorageOverrideDisabled: process.env.ALLOW_LOCAL_STORAGE_IN_PRODUCTION !== "true",
+  },
   generatedPdfDirExists: fs.existsSync(path.resolve("generated_pdfs")),
   dataDirExists: fs.existsSync(path.resolve(process.env.DATA_DIR || ".data")),
 };

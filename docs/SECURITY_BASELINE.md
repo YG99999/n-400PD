@@ -11,10 +11,10 @@
 
 ## Required before public launch
 
-- Replace mock payments with Stripe Checkout and webhook verification
-- Replace local JSON persistence with managed database storage
-- Replace filesystem PDF storage with managed object storage
-- Add password reset and email verification
+- Keep Stripe Checkout and webhook verification configured in production
+- Keep Supabase auth, database, and storage configured in production
+- Keep public demo disabled and production fallbacks off
+- Validate password reset and email verification UX in the live environment
 - Add external error tracking and structured log shipping
 - Add secret rotation and backup/restore procedure
 

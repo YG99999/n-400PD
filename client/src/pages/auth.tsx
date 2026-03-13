@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { isSupabaseAuthEnabled } from "@/lib/supabase";
+import { isSupabaseAuthEnabled, supabase } from "@/lib/supabase";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -97,6 +97,14 @@ export function LoginPage() {
               Sign up
             </Link>
           </p>
+          {isSupabaseAuthEnabled ? (
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              Forgot your password?{" "}
+              <Link href="/reset-password" className="text-primary hover:underline">
+                Reset it here
+              </Link>
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </div>
@@ -194,6 +202,150 @@ export function SignupPage() {
           </p>
           <p className="text-xs text-muted-foreground text-center mt-3">
             By creating an account, you agree that CitizenFlow is a form-preparation tool, not legal advice. Email verification is required before payment.
+          </p>
+          {isSupabaseAuthEnabled ? (
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              After sign up, verify your email before checkout. If the message does not arrive, you can request another link from the reset page.
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function ResetPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [mode, setMode] = useState<"request" | "update">("request");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash || "";
+    if (hash.includes("type=recovery") || hash.includes("access_token=")) {
+      setMode("update");
+    }
+  }, []);
+
+  const requestReset = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!supabase) {
+      toast({ title: "Reset unavailable", description: "Password reset is only available with Supabase Auth.", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/#/reset-password`,
+      });
+      if (error) throw error;
+      toast({
+        title: "Reset email sent",
+        description: "Check your inbox for a password reset link.",
+      });
+    } catch (err: any) {
+      toast({ title: "Reset failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const updatePassword = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!supabase) {
+      toast({ title: "Reset unavailable", description: "Password reset is only available with Supabase Auth.", variant: "destructive" });
+      return;
+    }
+    if (password.length < 8) {
+      toast({ title: "Password too short", description: "Use at least 8 characters.", variant: "destructive" });
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast({ title: "Passwords do not match", description: "Enter the same password twice.", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      toast({
+        title: "Password updated",
+        description: "You can sign in with your new password now.",
+      });
+      navigate("/login");
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>{mode === "update" ? "Set a new password" : "Reset your password"}</CardTitle>
+          <CardDescription>
+            {mode === "update"
+              ? "Enter a new password for your CitizenFlow account."
+              : "We will email you a secure reset link."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={mode === "update" ? updatePassword : requestReset} className="space-y-4">
+            {mode === "request" ? (
+              <div>
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    minLength={8}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    minLength={8}
+                    required
+                  />
+                </div>
+              </>
+            )}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {mode === "update" ? "Save New Password" : "Send Reset Email"}
+            </Button>
+          </form>
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            <Link href="/login" className="text-primary hover:underline">
+              Back to sign in
+            </Link>
           </p>
         </CardContent>
       </Card>

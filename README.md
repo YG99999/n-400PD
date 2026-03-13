@@ -87,11 +87,16 @@ It runs:
 
 ## Current launch boundary
 
-This repo is now much closer to launch-ready, but it still uses:
+This repo now expects production to run with:
 
-- local JSON persistence instead of PostgreSQL/Drizzle
-- Stripe Checkout with webhook processing
-- Supabase Storage-backed PDF delivery
-- manual account request handling instead of fulfillment automation
+- Supabase-backed auth, persistence, and private storage
+- Stripe Checkout plus verified webhook processing
+- background worker-driven PDF generation
+- public demo mode disabled
 
-Those are the remaining production gaps if you want to call it fully market-ready beyond this workspace baseline.
+The remaining non-code launch work is operational:
+
+- support inbox ownership and SLA
+- manual export/deletion fulfillment workflow
+- external error tracking and alerting
+- legal review of disclaimers, refund copy, and filing guidance

@@ -3,6 +3,7 @@ import { type Server } from "http";
 import path from "path";
 import fs from "fs";
 import { randomUUID } from "crypto";
+import { spawnSync } from "child_process";
 import { storage } from "./storage";
 import { getInitialMessage } from "./conversation";
 import { processAssistantTurn } from "./assistantRuntime";
@@ -33,11 +34,162 @@ import { rateLimit } from "./security";
 import { requireAdmin, requireAuth, type AuthenticatedRequest, resolveRequestUser } from "./auth";
 import { verifyPassword, hashPassword } from "./password";
 import { documentJobs } from "./documentJobs";
-import { config, isStripeConfigured, isSupabaseConfigured } from "./config";
+import { canUseLocalStorage, config, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
 import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
 
 const OUTPUT_DIR = path.resolve("generated_pdfs");
+const PDF_DIR = path.resolve(import.meta.dirname, "pdf");
+const ACROFORM_PATH = path.join(PDF_DIR, "n400_acroform.pdf");
+const POPULATOR_PATH = path.join(PDF_DIR, "n400_populator.py");
+
+type ReadinessCheck = {
+  ok: boolean;
+  detail?: string;
+};
+
+function checkPythonRuntime(): ReadinessCheck {
+  const candidates = process.platform === "win32"
+    ? [["python"], ["py", "-3"], ["py"]]
+    : [["python3"], ["python"]];
+
+  for (const [command, ...args] of candidates) {
+    const result = spawnSync(command, [...args, "--version"], {
+      stdio: "ignore",
+      timeout: 3000,
+    });
+    if (result.status === 0) {
+      return { ok: true, detail: [command, ...args].join(" ") };
+    }
+  }
+
+  return { ok: false, detail: "No Python runtime with PyMuPDF-compatible execution path was found." };
+}
+
+async function buildReadinessPayload() {
+  const supabaseAdmin = getSupabaseAdminClient();
+
+  const checks: Record<string, ReadinessCheck> = {
+    sessionSecretConfigured: {
+      ok: Boolean(config.sessionSecret && config.sessionSecret !== "dev-session-secret-change-me"),
+    },
+    secureCookies: {
+      ok: !isProduction() || config.useSecureCookies,
+      detail: isProduction() ? "Production requires SECURE_COOKIES=true." : "Not required outside production.",
+    },
+    pdfTemplatePresent: {
+      ok: fs.existsSync(ACROFORM_PATH) && fs.existsSync(POPULATOR_PATH),
+      detail: "Checks the bundled PDF template and Python populator assets.",
+    },
+    generatedPdfDirPresent: {
+      ok: fs.existsSync(OUTPUT_DIR),
+    },
+    pythonRuntime: checkPythonRuntime(),
+    stripeConfigured: {
+      ok: isStripeConfigured(),
+      detail: "Requires secret key, webhook secret, and live price id.",
+    },
+    supabaseConfigured: {
+      ok: isSupabaseConfigured(),
+      detail: "Requires URL, anon/publishable key, service role key, and storage bucket.",
+    },
+    documentProcessingMode: {
+      ok: config.inlineDocumentProcessing || config.documentWorkerPollMs > 0,
+      detail: config.inlineDocumentProcessing
+        ? "Inline document processing is enabled."
+        : `Background worker polling every ${config.documentWorkerPollMs}ms.`,
+    },
+    localStorageAllowed: {
+      ok: canUseLocalStorage(),
+      detail: canUseLocalStorage()
+        ? "Local storage is permitted in this environment."
+        : "Local storage is disabled; Supabase must be available.",
+    },
+  };
+
+  if (isSupabaseConfigured() && supabaseAdmin) {
+    try {
+      const { error } = await supabaseAdmin.from("profiles").select("id", { head: true, count: "exact" });
+      checks.supabaseDatabaseAccess = {
+        ok: !error,
+        detail: error?.message || "Profiles table is reachable.",
+      };
+    } catch (error) {
+      checks.supabaseDatabaseAccess = {
+        ok: false,
+        detail: error instanceof Error ? error.message : String(error),
+      };
+    }
+
+    try {
+      const { error } = await supabaseAdmin.storage.from(config.supabaseStorageBucket).list("", { limit: 1 });
+      checks.supabaseStorageAccess = {
+        ok: !error,
+        detail: error?.message || `Bucket ${config.supabaseStorageBucket} is reachable.`,
+      };
+    } catch (error) {
+      checks.supabaseStorageAccess = {
+        ok: false,
+        detail: error instanceof Error ? error.message : String(error),
+      };
+    }
+  } else {
+    checks.supabaseDatabaseAccess = {
+      ok: false,
+      detail: "Supabase admin client is unavailable.",
+    };
+    checks.supabaseStorageAccess = {
+      ok: false,
+      detail: "Supabase storage checks are unavailable without the admin client.",
+    };
+  }
+
+  if (!isSupabaseConfigured()) {
+    try {
+      const demoUser = await storage.getUserByUsername("demo@citizenflow.app");
+      checks.demoSeedAvailable = {
+        ok: Boolean(demoUser),
+        detail: "Local-storage/demo mode requires the seeded demo account.",
+      };
+    } catch (error) {
+      checks.demoSeedAvailable = {
+        ok: false,
+        detail: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  const criticalChecks = [
+    "sessionSecretConfigured",
+    "secureCookies",
+    "pdfTemplatePresent",
+    "generatedPdfDirPresent",
+    "pythonRuntime",
+    "documentProcessingMode",
+  ];
+
+  if (isProduction()) {
+    criticalChecks.push("stripeConfigured");
+  }
+
+  if (isSupabaseConfigured()) {
+    criticalChecks.push("supabaseConfigured", "supabaseDatabaseAccess", "supabaseStorageAccess");
+  } else {
+    criticalChecks.push("localStorageAllowed", "demoSeedAvailable");
+  }
+
+  const failedCriticalChecks = criticalChecks.filter((name) => !checks[name]?.ok);
+
+  return {
+    ok: failedCriticalChecks.length === 0,
+    failedCriticalChecks,
+    storageMode: isSupabaseConfigured() ? "supabase" : "local_json",
+    paymentMode: isStripeConfigured() ? "stripe" : "unconfigured",
+    documentProcessingMode: config.inlineDocumentProcessing ? "inline" : "background_worker",
+    checks,
+    time: new Date().toISOString(),
+  };
+}
 
 function sanitizeUser(user: Awaited<ReturnType<typeof storage.getUser>>) {
   if (!user) return null;
@@ -77,29 +229,8 @@ export async function registerRoutes(
   });
 
   app.get("/readyz", async (_req, res) => {
-    const demoUser = await storage.getUserByUsername("demo@citizenflow.app");
-    const demoSession = await storage.getSession("demo-session-id");
-    const latestDemoDocument = demoSession ? await storage.getLatestDocumentBySession(demoSession.id) : null;
-
-    const payload = {
-      ok: Boolean(demoUser && demoSession),
-      checks: {
-        demoUser: Boolean(demoUser),
-        demoSession: Boolean(demoSession),
-        generatedPdfDir: fs.existsSync(OUTPUT_DIR),
-        sessionSecretConfigured: Boolean(config.sessionSecret),
-        stripeConfigured: isStripeConfigured(),
-        supabaseConfigured: isSupabaseConfigured(),
-      },
-      latestDemoDocumentStatus: latestDemoDocument?.status ?? null,
-      time: new Date().toISOString(),
-    };
-
-    if (!payload.ok) {
-      return res.status(503).json(payload);
-    }
-
-    return res.json(payload);
+    const payload = await buildReadinessPayload();
+    return res.status(payload.ok ? 200 : 503).json(payload);
   });
 
   app.post("/api/payment/webhook", async (req, res) => {
@@ -729,6 +860,12 @@ export async function registerRoutes(
           provider: "stripe",
           checkoutUrl: checkoutSession.url,
           message: "Redirecting to Stripe Checkout.",
+        });
+      }
+
+      if (isProduction()) {
+        return res.status(503).json({
+          error: "Stripe checkout is not configured for production. Mock payments are disabled.",
         });
       }
 

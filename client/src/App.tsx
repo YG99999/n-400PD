@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import LandingPage from "@/pages/landing";
-import { LoginPage, SignupPage } from "@/pages/auth";
+import { LoginPage, ResetPasswordPage, SignupPage } from "@/pages/auth";
 import ChatPage from "@/pages/chat";
 import ReviewPage from "@/pages/review";
 import PaymentPage from "@/pages/payment";
@@ -48,6 +48,7 @@ function AppRouter() {
           <SignupPage />
         </AuthRedirect>
       </Route>
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/chat">
         <ProtectedRoute>
           <ChatPage />

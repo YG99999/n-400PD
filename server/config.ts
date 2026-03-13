@@ -11,14 +11,18 @@ function toBoolean(value: string | undefined, fallback = false) {
   return value === "true";
 }
 
+const nodeEnv = process.env.NODE_ENV || "development";
+const production = nodeEnv === "production";
+const explicitPublicDemo = toBoolean(process.env.PUBLIC_DEMO_ENABLED, !production);
+
 export const config = {
   appUrl: process.env.APP_URL || "http://localhost:5000",
   port: Number(process.env.PORT || "5000"),
-  nodeEnv: process.env.NODE_ENV || "development",
+  nodeEnv,
   sessionSecret: requireEnv("SESSION_SECRET", "dev-session-secret-change-me"),
   dataDir: process.env.DATA_DIR || ".data",
-  publicDemoEnabled: toBoolean(process.env.PUBLIC_DEMO_ENABLED, true),
-  useSecureCookies: toBoolean(process.env.SECURE_COOKIES, process.env.NODE_ENV === "production"),
+  publicDemoEnabled: explicitPublicDemo && !production,
+  useSecureCookies: toBoolean(process.env.SECURE_COOKIES, production),
   supportedUscisEdition: process.env.SUPPORTED_USCIS_EDITION || "01/20/25",
   paymentAmountCents: Number(process.env.PAYMENT_AMOUNT_CENTS || "14900"),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || "",
@@ -31,12 +35,30 @@ export const config = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   supabaseStorageBucket: process.env.SUPABASE_STORAGE_BUCKET || "citizenflow-documents",
   documentWorkerPollMs: Number(process.env.DOCUMENT_WORKER_POLL_MS || "3000"),
-  inlineDocumentProcessing: toBoolean(process.env.INLINE_DOCUMENT_PROCESSING, process.env.NODE_ENV !== "production"),
+  inlineDocumentProcessing: toBoolean(process.env.INLINE_DOCUMENT_PROCESSING, !production),
+  allowProductionFallbacks: toBoolean(process.env.ALLOW_PRODUCTION_FALLBACKS, false),
+  allowLocalStorageInProduction: toBoolean(process.env.ALLOW_LOCAL_STORAGE_IN_PRODUCTION, false),
 };
 
 export function assertProductionReadiness() {
-  if (config.nodeEnv === "production" && config.sessionSecret === "dev-session-secret-change-me") {
+  if (!production) {
+    return;
+  }
+
+  if (config.sessionSecret === "dev-session-secret-change-me") {
     throw new Error("SESSION_SECRET must be set in production.");
+  }
+
+  if (!isSupabaseConfigured() && !config.allowProductionFallbacks && !config.allowLocalStorageInProduction) {
+    throw new Error("Supabase must be configured in production or an explicit local-storage override must be enabled.");
+  }
+
+  if (!isStripeConfigured() && !config.allowProductionFallbacks) {
+    throw new Error("Stripe must be configured in production unless explicit production fallbacks are enabled.");
+  }
+
+  if (!config.useSecureCookies) {
+    throw new Error("SECURE_COOKIES must be enabled in production.");
   }
 }
 
@@ -51,4 +73,12 @@ export function isSupabaseConfigured() {
     config.supabaseServiceRoleKey &&
     config.supabaseStorageBucket,
   );
+}
+
+export function isProduction() {
+  return production;
+}
+
+export function canUseLocalStorage() {
+  return !production || config.allowLocalStorageInProduction || config.allowProductionFallbacks;
 }

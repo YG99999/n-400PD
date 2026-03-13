@@ -1,0 +1,14 @@
+create index if not exists idx_application_sessions_user_id on public.application_sessions (user_id);
+create index if not exists idx_audit_events_user_id on public.audit_events (user_id);
+create index if not exists idx_chat_messages_session_id on public.chat_messages (session_id);
+create index if not exists idx_chat_messages_user_id on public.chat_messages (user_id);
+create index if not exists idx_document_jobs_session_id on public.document_jobs (session_id);
+create index if not exists idx_document_jobs_user_id on public.document_jobs (user_id);
+create index if not exists idx_generated_documents_job_id on public.generated_documents (job_id);
+create index if not exists idx_generated_documents_session_id on public.generated_documents (session_id);
+create index if not exists idx_generated_documents_user_id on public.generated_documents (user_id);
+create index if not exists idx_payments_session_id on public.payments (session_id);
+create index if not exists idx_payments_user_id on public.payments (user_id);
+create index if not exists idx_privacy_requests_user_id on public.privacy_requests (user_id);
+create index if not exists idx_support_tickets_session_id on public.support_tickets (session_id);
+create index if not exists idx_support_tickets_user_id on public.support_tickets (user_id);

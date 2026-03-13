@@ -12,7 +12,7 @@ import {
   emptyFormData,
   createEmptyWorkflowState,
 } from "@shared/schema";
-import { config, isSupabaseConfigured } from "./config";
+import { canUseLocalStorage, config, isSupabaseConfigured, isProduction } from "./config";
 import { hashPassword } from "./password";
 import { getSupabaseAdminClient } from "./providers";
 
@@ -1014,4 +1014,20 @@ class JsonStorage implements IStorage {
   async listAuditEventsByUser(userId: string) { return Object.values(this.state.auditEvents).filter((event) => event.userId === userId).slice(0, 100); }
 }
 
-export const storage: IStorage = isSupabaseConfigured() ? new SupabaseStorage() : new JsonStorage();
+function createStorage(): IStorage {
+  if (isSupabaseConfigured()) {
+    return new SupabaseStorage();
+  }
+
+  if (!canUseLocalStorage()) {
+    throw new Error("Local JSON storage is disabled in production. Configure Supabase or enable an explicit override.");
+  }
+
+  if (isProduction()) {
+    console.warn("Using local JSON storage in production because an explicit override is enabled.");
+  }
+
+  return new JsonStorage();
+}
+
+export const storage: IStorage = createStorage();

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { isSupabaseAuthEnabled } from "@/lib/supabase";
 import {
   MessageSquare,
   FileCheck,
@@ -73,9 +74,11 @@ export default function LandingPage() {
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base" onClick={handleDemo} data-testid="button-try-demo">
-              Try Demo
-            </Button>
+            {!isSupabaseAuthEnabled ? (
+              <Button size="lg" variant="outline" className="h-12 px-8 text-base" onClick={handleDemo} data-testid="button-try-demo">
+                Try Demo
+              </Button>
+            ) : null}
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             No credit card required to begin. Pay only when you are ready to generate your PDF.
