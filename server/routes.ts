@@ -94,6 +94,8 @@ function checkPythonRuntime(): ReadinessCheck {
 
 async function buildReadinessPayload() {
   const supabaseAdmin = getSupabaseAdminClient();
+  const textAssistantStatus = getTextAssistantConfigStatus();
+  const elevenLabsStatus = getElevenLabsConfigStatus();
 
   const checks: Record<string, ReadinessCheck> = {
     sessionSecretConfigured: {
@@ -126,10 +128,16 @@ async function buildReadinessPayload() {
         : `Background worker polling every ${config.documentWorkerPollMs}ms.`,
     },
     elevenLabsConfigured: {
-      ok: getElevenLabsConfigStatus().configured,
-      detail: getElevenLabsConfigStatus().configured
+      ok: elevenLabsStatus.configured,
+      detail: elevenLabsStatus.configured
         ? `Agent ${config.elevenLabsAgentId} configured for ${config.elevenLabsServerLocation}.`
-        : `Missing ${getElevenLabsConfigStatus().missing.join(", ")} on the web service.`,
+        : `Missing ${elevenLabsStatus.missing.join(", ")} on the web service.`,
+    },
+    textAssistantConfigured: {
+      ok: textAssistantStatus.configured,
+      detail: textAssistantStatus.configured
+        ? `${textAssistantStatus.provider} is configured for text chat.`
+        : "Missing GEMINI_API_KEY or OPENAI_API_KEY on the running web service.",
     },
     elevenLabsWorkletsPresent: {
       ok: ELEVENLABS_WORKLET_FILES.every((file) => fs.existsSync(path.join(ELEVENLABS_WORKLETS_DIR, file))),
