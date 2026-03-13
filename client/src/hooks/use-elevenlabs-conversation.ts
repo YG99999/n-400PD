@@ -41,16 +41,19 @@ const WORKLET_PATHS = {
 } as const;
 
 function createSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMode) {
+  const sessionDynamicVariables = {
+    user_first_name: bootstrap.dynamicVariables.user_first_name,
+    form_session_id: bootstrap.dynamicVariables.form_session_id,
+    current_section: bootstrap.dynamicVariables.current_section,
+    workflow_mode: bootstrap.dynamicVariables.workflow_mode,
+    ready_for_review: bootstrap.dynamicVariables.ready_for_review,
+  };
+
   const commonOptions = {
     workletPaths: WORKLET_PATHS,
-    dynamicVariables: bootstrap.dynamicVariables,
+    dynamicVariables: sessionDynamicVariables,
+    userId: String(bootstrap.formSessionId),
     overrides: {
-      agent: {
-        prompt: {
-          prompt: bootstrap.prompt,
-        },
-        firstMessage: bootstrap.firstMessage,
-      },
       conversation: {
         textOnly: mode === "text",
       },
@@ -80,20 +83,23 @@ function createSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMo
 }
 
 function createWebRtcSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMode) {
+  const sessionDynamicVariables = {
+    user_first_name: bootstrap.dynamicVariables.user_first_name,
+    form_session_id: bootstrap.dynamicVariables.form_session_id,
+    current_section: bootstrap.dynamicVariables.current_section,
+    workflow_mode: bootstrap.dynamicVariables.workflow_mode,
+    ready_for_review: bootstrap.dynamicVariables.ready_for_review,
+  };
+
   return {
     conversationToken: bootstrap.conversationToken,
     connectionType: "webrtc" as const,
     textOnly: mode === "text",
     serverLocation: bootstrap.serverLocation,
     workletPaths: WORKLET_PATHS,
-    dynamicVariables: bootstrap.dynamicVariables,
+    dynamicVariables: sessionDynamicVariables,
+    userId: String(bootstrap.formSessionId),
     overrides: {
-      agent: {
-        prompt: {
-          prompt: bootstrap.prompt,
-        },
-        firstMessage: bootstrap.firstMessage,
-      },
       conversation: {
         textOnly: mode === "text",
       },
