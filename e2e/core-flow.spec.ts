@@ -23,7 +23,7 @@ test("demo user can use chat, review, payment, regenerate, and download through 
 
   await page.getByTestId("input-chat").fill("Carlos Eduardo Martinez");
   await page.getByTestId("button-send").click();
-  await expect(page.getByText(/date of birth/i)).toBeVisible();
+  await expect(page.getByText(/what is your date of birth/i).first()).toBeVisible();
 
   await page.goto("/#/review");
   await expect(page.getByRole("heading", { name: "Review and Edit" })).toBeVisible();

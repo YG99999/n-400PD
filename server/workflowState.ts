@@ -190,6 +190,8 @@ function getDefaultChatSessionState(): ChatSessionState {
     flowState: "entry",
     resumable: false,
     pendingHandoffTarget: null,
+    awaitingUserResponse: false,
+    liveConnectionState: "idle",
   };
 }
 
@@ -210,6 +212,9 @@ export function createChatSessionSnapshot(
   const hasPersistedChatSession = Boolean(session.workflowState.chatSession);
   const chatSession = mergeChatSessionState(session.workflowState.chatSession, {});
   const readiness = session.workflowState.lastReadiness;
+  const currentPrompt = chatSession.currentPrompt
+    ?? chatSession.lastMeaningfulAssistantMessage
+    ?? [...session.messages].reverse().find((message) => message.role === "assistant")?.content;
   const lastAssistantPrompt = chatSession.lastMeaningfulAssistantMessage
     ?? [...session.messages].reverse().find((message) => message.role === "assistant")?.content;
   const nextRequiredItem = readiness?.missingFields[0];
@@ -238,6 +243,9 @@ export function createChatSessionSnapshot(
     resumable: flowState !== "entry",
     lastUsedMode: chatSession.lastUsedMode,
     pendingHandoffTarget: chatSession.pendingHandoffTarget ?? null,
+    currentPrompt,
+    awaitingUserResponse: Boolean(chatSession.awaitingUserResponse ?? currentPrompt),
+    liveConnectionState: chatSession.liveConnectionState,
     lastAssistantPrompt,
     summary,
     nextRequiredItem,
@@ -254,6 +262,7 @@ export function recordConversationStart(
       flowState: "active",
       lastUsedMode: mode,
       resumable: true,
+      liveConnectionState: "connecting",
       lastTransportError: undefined,
       stoppedAt: undefined,
     }),
@@ -269,8 +278,47 @@ export function recordConversationStop(
     chatSession: mergeChatSessionState(workflowState.chatSession, {
       flowState: "stopped",
       resumable: true,
+      liveConnectionState: "saved",
       lastTransportError: reason || undefined,
       stoppedAt: new Date().toISOString(),
+    }),
+  };
+}
+
+export function recordAssistantPrompt(
+  workflowState: WorkflowState,
+  prompt: string,
+  mode?: ConversationMode,
+): WorkflowState {
+  return {
+    ...workflowState,
+    chatSession: mergeChatSessionState(workflowState.chatSession, {
+      flowState: workflowState.chatSession?.pendingHandoffTarget ? "handoff_ready" : "active",
+      resumable: true,
+      currentPrompt: prompt,
+      awaitingUserResponse: true,
+      liveConnectionState: mode === "voice" ? "listening" : "saved",
+      lastUsedMode: mode ?? workflowState.chatSession?.lastUsedMode,
+      lastMeaningfulAssistantMessage: prompt,
+      lastTransportError: null,
+      stoppedAt: null,
+    }),
+  };
+}
+
+export function recordUserReply(
+  workflowState: WorkflowState,
+  mode?: ConversationMode,
+): WorkflowState {
+  return {
+    ...workflowState,
+    chatSession: mergeChatSessionState(workflowState.chatSession, {
+      flowState: "active",
+      resumable: true,
+      awaitingUserResponse: false,
+      liveConnectionState: "thinking",
+      lastUsedMode: mode ?? workflowState.chatSession?.lastUsedMode,
+      lastTransportError: null,
     }),
   };
 }
@@ -286,6 +334,9 @@ export function recordHandoffReady(
       flowState: "handoff_ready",
       resumable: true,
       pendingHandoffTarget: target,
+      currentPrompt: summary || workflowState.chatSession?.currentPrompt,
+      awaitingUserResponse: false,
+      liveConnectionState: "saved",
       lastMeaningfulAssistantMessage: summary || workflowState.chatSession?.lastMeaningfulAssistantMessage,
       lastTransportError: undefined,
       stoppedAt: undefined,
@@ -299,6 +350,7 @@ export function clearPendingHandoff(workflowState: WorkflowState): WorkflowState
     chatSession: mergeChatSessionState(workflowState.chatSession, {
       flowState: workflowState.chatSession?.resumable ? "resume_prompt" : "entry",
       pendingHandoffTarget: null,
+      liveConnectionState: workflowState.chatSession?.resumable ? "saved" : "idle",
     }),
   };
 }

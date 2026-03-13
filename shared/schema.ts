@@ -278,6 +278,18 @@ export interface ChatSessionState {
   lastUsedMode?: ConversationMode;
   resumable: boolean;
   pendingHandoffTarget?: "review" | "payment" | null;
+  currentPrompt?: string;
+  awaitingUserResponse?: boolean;
+  liveConnectionState?:
+    | "idle"
+    | "preparing_question"
+    | "connecting"
+    | "listening"
+    | "thinking"
+    | "speaking"
+    | "switching"
+    | "recovering"
+    | "saved";
   lastMeaningfulAssistantMessage?: string;
   lastTransportError?: string | null;
   stoppedAt?: string | null;
@@ -288,6 +300,9 @@ export interface ChatSessionSnapshot {
   resumable: boolean;
   lastUsedMode?: ConversationMode;
   pendingHandoffTarget?: "review" | "payment" | null;
+  currentPrompt?: string;
+  awaitingUserResponse: boolean;
+  liveConnectionState?: ChatSessionState["liveConnectionState"];
   lastAssistantPrompt?: string;
   summary: string;
   nextRequiredItem?: string;
@@ -422,6 +437,9 @@ export const chatSessionStateSchema = z.object({
   lastUsedMode: z.enum(["voice", "text"]).optional(),
   resumable: z.boolean().optional(),
   pendingHandoffTarget: z.enum(["review", "payment"]).nullable().optional(),
+  currentPrompt: z.string().max(5000).optional(),
+  awaitingUserResponse: z.boolean().optional(),
+  liveConnectionState: z.enum(["idle", "preparing_question", "connecting", "listening", "thinking", "speaking", "switching", "recovering", "saved"]).optional(),
   lastMeaningfulAssistantMessage: z.string().max(5000).optional(),
   lastTransportError: z.string().max(5000).nullable().optional(),
   stoppedAt: z.string().nullable().optional(),
@@ -553,6 +571,8 @@ export function createEmptyWorkflowState(): WorkflowState {
       flowState: "entry",
       resumable: false,
       pendingHandoffTarget: null,
+      awaitingUserResponse: false,
+      liveConnectionState: "idle",
     },
     toolEvents: [],
     editHistory: [],

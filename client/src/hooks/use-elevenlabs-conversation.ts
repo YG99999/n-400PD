@@ -35,6 +35,8 @@ type ChatUiState =
   | "entry"
   | "starting_voice"
   | "starting_text"
+  | "switching_voice"
+  | "switching_text"
   | "active_voice"
   | "active_text"
   | "stopped_resumable"
@@ -351,6 +353,7 @@ export function useElevenLabsConversation({
       resumable: transcript.length > 0 || Boolean(initialChatStateRef.current?.resumable),
       lastUsedMode: nextMode ?? preferredMode,
       lastTransportError: normalized.message,
+      liveConnectionState: "recovering",
     });
   }, [persistChatState, preferredMode, transcript.length]);
 
@@ -464,6 +467,12 @@ export function useElevenLabsConversation({
       setAgentStatus(mode === "voice" ? "listening" : "ready");
       setError(null);
       setNormalizedError(null);
+      void persistChatState({
+        flowState: "active",
+        resumable: true,
+        lastUsedMode: mode,
+        liveConnectionState: mode === "voice" ? "listening" : "saved",
+      });
       logConversationEvent(correlationIdRef.current, "connected", {
         conversationId,
         mode,
@@ -484,6 +493,7 @@ export function useElevenLabsConversation({
           flowState: "resume_prompt",
           resumable: true,
           lastUsedMode: connectModeRef.current,
+          liveConnectionState: "saved",
         });
       }
       isStartingRef.current = false;
@@ -514,7 +524,12 @@ export function useElevenLabsConversation({
       logConversationEvent(correlationIdRef.current, "status_change", { status });
       if (status === "connecting") {
         setAgentStatus("connecting");
-        setUiState(connectModeRef.current === "voice" ? "starting_voice" : "starting_text");
+        setUiState((current) => {
+          if (current === "switching_voice" || current === "switching_text") {
+            return current;
+          }
+          return connectModeRef.current === "voice" ? "starting_voice" : "starting_text";
+        });
       }
     },
     onInterruption: () => {
@@ -577,6 +592,13 @@ export function useElevenLabsConversation({
     }
 
     if ((isConnectedVoice && mode === "text") || (isConnectedText && mode === "voice")) {
+      setUiState(mode === "voice" ? "switching_voice" : "switching_text");
+      await persistChatState({
+        flowState: "active",
+        resumable: true,
+        lastUsedMode: mode,
+        liveConnectionState: "switching",
+      });
       await safelyEndConversation();
     }
 
@@ -588,6 +610,12 @@ export function useElevenLabsConversation({
 
     try {
       setUiState(mode === "voice" ? "starting_voice" : "starting_text");
+      await persistChatState({
+        flowState: "active",
+        resumable: true,
+        lastUsedMode: mode,
+        liveConnectionState: "connecting",
+      });
       const bootstrap = await fetchBootstrap(mode);
       correlationIdRef.current = bootstrap.correlationId;
       setSessionDebug(bootstrap.debug ?? null);
@@ -630,6 +658,7 @@ export function useElevenLabsConversation({
           resumable: true,
           lastUsedMode: "text",
           lastTransportError: normalized.message,
+          liveConnectionState: "saved",
         });
         onSwitchToTextRef.current?.();
         return;
@@ -674,6 +703,12 @@ export function useElevenLabsConversation({
         setComposerValue("");
         await onSessionSyncRef.current?.();
         setAgentStatus("ready");
+        await persistChatState({
+          flowState: "active",
+          resumable: true,
+          lastUsedMode: "text",
+          liveConnectionState: "saved",
+        });
         onSwitchToTextRef.current?.();
         return;
       }
@@ -700,21 +735,9 @@ export function useElevenLabsConversation({
       lastUsedMode: preferredMode,
       stoppedAt: new Date().toISOString(),
       lastTransportError: null,
+      liveConnectionState: "saved",
     });
   }, [persistChatState, preferredMode, safelyEndConversation]);
-
-  const endCurrentChat = useCallback(async () => {
-    await safelyEndConversation();
-    setError(null);
-    setNormalizedError(null);
-    setUiState("entry");
-    await persistChatState({
-      flowState: "entry",
-      resumable: false,
-      pendingHandoffTarget: null,
-      lastTransportError: null,
-    });
-  }, [persistChatState, safelyEndConversation]);
 
   const switchMode = useCallback(async (mode: ConversationMode) => {
     if (mode === preferredMode && (uiState === "active_voice" || uiState === "active_text")) {
@@ -729,6 +752,7 @@ export function useElevenLabsConversation({
       flowState: transcript.length > 0 ? "resume_prompt" : "entry",
       resumable: transcript.length > 0,
       pendingHandoffTarget: null,
+      liveConnectionState: transcript.length > 0 ? "saved" : "idle",
     });
   }, [persistChatState, transcript.length]);
 
@@ -737,6 +761,7 @@ export function useElevenLabsConversation({
       flowState: "resume_prompt",
       resumable: true,
       pendingHandoffTarget: null,
+      liveConnectionState: "saved",
     });
     onNavigate?.(target);
   }, [onNavigate, persistChatState]);
@@ -760,8 +785,7 @@ export function useElevenLabsConversation({
     },
     sendMessage,
     startConversation,
-    stopConversation,
-    endCurrentChat,
+    pauseConversation: stopConversation,
     switchMode,
     continueToTarget,
     stayInChat,

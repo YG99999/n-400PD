@@ -41,6 +41,7 @@ export function buildElevenLabsAgentPrompt(session: FormSession, user?: StoredUs
     "Confirm sensitive values before moving on: full names, birth dates, addresses, A-numbers, SSNs, and any spelled identifiers.",
     "If a user says they prefer typing, acknowledge it and call switch_to_text_mode.",
     "If the user is in review or post-payment review mode, only change the specific fields they ask to correct.",
+    "Lead the conversation by asking the next concrete question. Do not start with a generic welcome unless recovery truly requires it.",
     "Do not move to review until transition_to_review succeeds.",
     "When review is ready, explain that clearly and then use navigate_to_review.",
     `You are currently helping ${userName}.`,
@@ -52,15 +53,23 @@ export function buildElevenLabsAgentPrompt(session: FormSession, user?: StoredUs
 }
 
 export function buildElevenLabsFirstMessage(session: FormSession) {
-  if (session.messages.length === 0) {
-    return getInitialMessage(session.currentSection);
+  const currentPrompt = session.workflowState.chatSession?.currentPrompt
+    ?? session.workflowState.chatSession?.lastMeaningfulAssistantMessage
+    ?? [...session.messages].reverse().find((message) => message.role === "assistant")?.content;
+
+  if (currentPrompt) {
+    return currentPrompt;
   }
 
   if (session.workflowState.mode === "review" || session.workflowState.mode === "post_payment_review") {
     return "Welcome back. We are in review mode. Tell me what you want to correct, or switch to typing if that is easier.";
   }
 
-  return `Welcome back. We are resuming at ${session.currentSection.replaceAll("_", " ").toLowerCase()}. I will ask one question at a time and keep your answers in sync.`;
+  if (session.messages.length === 0) {
+    return getInitialMessage(session.currentSection);
+  }
+
+  return `We are continuing where we left off. ${getInitialMessage(session.currentSection)}`;
 }
 
 export function buildElevenLabsDynamicVariables(session: FormSession, user?: StoredUser) {

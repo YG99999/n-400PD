@@ -33,8 +33,10 @@ import {
   createChatSessionSnapshot,
   createReviewEdit,
   mergeChatSessionState,
+  recordAssistantPrompt,
   recordConversationStart,
   recordConversationStop,
+  recordUserReply,
   refreshWorkflowState,
   removeListItem,
   setValueAtPath,
@@ -566,8 +568,17 @@ export async function registerRoutes(
       if (!elevenLabsStatus.configured) {
         console.error("ElevenLabs session bootstrap failed:", elevenLabsStatus);
       }
+      const latestAssistantPrompt = [...session.messages]
+        .reverse()
+        .find((message) => message.role === "assistant")?.content ?? getInitialMessage(session.currentSection);
       const workflowState = recordConversationStart(
-        refreshWorkflowState(session),
+        {
+          ...refreshWorkflowState(session),
+          chatSession: mergeChatSessionState(session.workflowState.chatSession, {
+            currentPrompt: session.workflowState.chatSession?.currentPrompt ?? latestAssistantPrompt,
+            awaitingUserResponse: session.workflowState.chatSession?.awaitingUserResponse ?? true,
+          }),
+        },
         body.mode ?? "voice",
       );
       await storage.updateSession(session.id, { workflowState });
@@ -628,13 +639,16 @@ export async function registerRoutes(
 
       const body = chatSessionStateUpdateRequestSchema.parse(req.body);
       const session = await getAuthedUserSession(userId, body.formSessionId);
-      const nextWorkflowState = refreshWorkflowState({
+      let nextWorkflowState = refreshWorkflowState({
         ...session,
         workflowState: {
           ...session.workflowState,
           chatSession: mergeChatSessionState(session.workflowState.chatSession, body.chatSession),
         },
       });
+      if (body.chatSession.flowState === "stopped") {
+        nextWorkflowState = recordConversationStop(nextWorkflowState, body.chatSession.lastTransportError ?? undefined);
+      }
       await storage.updateSession(session.id, { workflowState: nextWorkflowState });
       return res.json({
         success: true,
@@ -771,19 +785,37 @@ export async function registerRoutes(
         transcriptKind: body.message.transcriptKind,
       };
       await persistTranscriptMessageIfMissing(session.id, message);
-      if (message.role === "assistant") {
-        const workflowState = refreshWorkflowState({
-          ...session,
-          workflowState: {
-            ...session.workflowState,
-            chatSession: mergeChatSessionState(session.workflowState.chatSession, {
-              lastMeaningfulAssistantMessage: message.content,
-              resumable: true,
-            }),
-          },
-        });
-        await storage.updateSession(session.id, { workflowState });
-      }
+      const mode = message.modality ?? session.workflowState.chatSession?.lastUsedMode;
+      const workflowState = message.role === "assistant"
+        ? refreshWorkflowState({
+            ...session,
+            workflowState: recordAssistantPrompt(
+              {
+                ...session.workflowState,
+                chatSession: mergeChatSessionState(session.workflowState.chatSession, {
+                  lastMeaningfulAssistantMessage: message.content,
+                  currentPrompt: message.content,
+                  resumable: true,
+                }),
+              },
+              message.content,
+              mode,
+            ),
+          })
+        : refreshWorkflowState({
+            ...session,
+            workflowState: recordUserReply(
+              {
+                ...session.workflowState,
+                chatSession: mergeChatSessionState(session.workflowState.chatSession, {
+                  resumable: true,
+                  currentPrompt: session.workflowState.chatSession?.currentPrompt,
+                }),
+              },
+              mode,
+            ),
+          });
+      await storage.updateSession(session.id, { workflowState });
       return res.status(201).json({ success: true });
     } catch (err: any) {
       return res.status(400).json({ error: err.message });
@@ -834,8 +866,25 @@ export async function registerRoutes(
         content: body.message,
         timestamp: new Date().toISOString(),
         section: session.currentSection,
+        modality: "text",
+        transcriptKind: "text_user",
       };
       await storage.addMessage(session.id, userMsg);
+      await storage.updateSession(session.id, {
+        workflowState: refreshWorkflowState({
+          ...session,
+          workflowState: recordUserReply(
+            {
+              ...session.workflowState,
+              chatSession: mergeChatSessionState(session.workflowState.chatSession, {
+                lastUsedMode: "text",
+                resumable: true,
+              }),
+            },
+            "text",
+          ),
+        }),
+      });
 
       const hydratedSession = (await storage.getSession(session.id)) || session;
       const result = await processAssistantTurn(hydratedSession, body.message);
@@ -848,13 +897,32 @@ export async function registerRoutes(
         section: result.currentSection,
         extractedFields: result.extractedFields,
         toolEvents: result.toolEvents,
+        modality: "text",
+        transcriptKind: "assistant",
       };
       await storage.addMessage(session.id, botMsg);
       await storage.updateFormData(session.id, result.updatedFormData);
+      const nextWorkflowState = refreshWorkflowState({
+        formData: result.updatedFormData,
+        paymentStatus: hydratedSession.paymentStatus,
+        pdfUrl: hydratedSession.pdfUrl,
+        workflowState: recordAssistantPrompt(
+          {
+            ...result.workflowState,
+            chatSession: mergeChatSessionState(result.workflowState.chatSession, {
+              lastUsedMode: "text",
+              resumable: true,
+            }),
+          },
+          result.botMessage,
+          "text",
+        ),
+        currentSection: result.currentSection,
+      });
       await storage.updateSession(session.id, {
         currentSection: result.currentSection,
         status: result.redirectIntent === "review" ? "review" : hydratedSession.status,
-        workflowState: result.workflowState,
+        workflowState: nextWorkflowState,
       });
       await storage.setRedFlags(session.id, result.redFlags);
 
@@ -862,8 +930,8 @@ export async function registerRoutes(
         botResponse: result.botMessage,
         extractedFields: result.extractedFields,
         currentSection: result.currentSection,
-        mode: result.workflowState.mode,
-        workflowState: result.workflowState,
+        mode: nextWorkflowState.mode,
+        workflowState: nextWorkflowState,
         readiness: result.readiness,
         redirectIntent: result.redirectIntent,
         redFlags: result.redFlags,
