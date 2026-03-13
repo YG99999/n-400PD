@@ -9,7 +9,7 @@ import type {
   WorkflowState,
 } from "@shared/schema";
 import { SECTIONS } from "@shared/schema";
-import { getInitialMessage, processMessage } from "./conversation";
+import { getInitialMessage } from "./conversation";
 import { buildFieldCatalogPrompt, determineSectionForPath, getSectionPrompt, summarizeScope } from "./assistantCatalog";
 import {
   clearPendingHandoff,
@@ -20,6 +20,7 @@ import {
   refreshWorkflowState,
   setValueAtPath,
 } from "./workflowState";
+import { getTextAssistantConfigStatus } from "./config";
 
 interface AssistantTurnResult {
   botMessage: string;
@@ -52,6 +53,23 @@ interface LlmProviderConfig {
   model: string;
 }
 
+function normalizeAssistantFieldUpdates(args: Record<string, unknown>) {
+  if (Array.isArray(args.updates)) {
+    return args.updates;
+  }
+
+  if (typeof args.updatesJson === "string") {
+    try {
+      const parsed = JSON.parse(args.updatesJson);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+}
+
 export async function processAssistantTurn(
   session: FormSession,
   userMessage: string,
@@ -73,14 +91,18 @@ export async function processAssistantTurn(
       : null;
 
   if (!provider) {
-    return runFallbackAssistantTurn(session, userMessage);
+    throw new Error("Text chat is not configured right now.");
   }
 
   try {
     return await runToolCallingAssistantTurn(provider, session, userMessage);
   } catch (error) {
-    console.error(`Assistant runtime (${provider.name}) failed, falling back to local engine:`, error);
-    return runFallbackAssistantTurn(session, userMessage);
+    console.error(`Assistant runtime (${provider.name}) failed:`, error);
+    const fallbackStatus = getTextAssistantConfigStatus();
+    if (!fallbackStatus.configured) {
+      throw new Error("Text chat is not configured right now.");
+    }
+    throw new Error("Text chat is temporarily unavailable right now.");
   }
 }
 
@@ -128,21 +150,13 @@ async function runToolCallingAssistantTurn(
         parameters: {
           type: "object",
           properties: {
-            updates: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  path: { type: "string" },
-                  value: {},
-                },
-                required: ["path", "value"],
-                additionalProperties: false,
-              },
+            updatesJson: {
+              type: "string",
+              description: "A JSON string array of confirmed updates with path and value keys.",
             },
             note: { type: "string" },
           },
-          required: ["updates"],
+          required: ["updatesJson"],
           additionalProperties: false,
         },
       },
@@ -339,7 +353,7 @@ export function executeAssistantToolCall(
       };
     }
     case "update_form_fields": {
-      const updates = Array.isArray(args.updates) ? args.updates : [];
+      const updates = normalizeAssistantFieldUpdates(args);
       for (const update of updates) {
         const path = typeof update === "object" && update && "path" in update ? String(update.path) : "";
         if (!path) continue;
@@ -558,46 +572,6 @@ function buildSystemPrompt(session: FormSession, workflowState: WorkflowState) {
     "Field catalog:",
     buildFieldCatalogPrompt(),
   ].join("\n");
-}
-
-function runFallbackAssistantTurn(session: FormSession, userMessage: string): AssistantTurnResult {
-  const fallback = processMessage(
-    userMessage,
-    session.currentSection,
-    session.formData,
-    session.messages,
-  );
-
-  const workflowState = refreshWorkflowState({
-    formData: fallback.updatedFormData,
-    paymentStatus: session.paymentStatus,
-    pdfUrl: session.pdfUrl,
-    workflowState: session.workflowState,
-    currentSection: fallback.nextSection || session.currentSection,
-  });
-
-  if (fallback.shouldMoveToNextSection && fallback.nextSection) {
-    workflowState.sectionStates[session.currentSection].status = "completed";
-  }
-
-  if (fallback.nextSection === "REVIEW") {
-    workflowState.mode = "review";
-    workflowState.currentContext = "review_edits";
-    workflowState.pendingRedirect = null;
-    workflowState.chatSession = recordHandoffReady(workflowState, "review", fallback.botMessage).chatSession;
-  }
-
-  return {
-    botMessage: fallback.botMessage,
-    updatedFormData: fallback.updatedFormData,
-    workflowState,
-    currentSection: fallback.nextSection || session.currentSection,
-    redirectIntent: workflowState.chatSession.pendingHandoffTarget === "review" ? "review" : null,
-    readiness: workflowState.lastReadiness || computeReadiness(fallback.updatedFormData, workflowState),
-    toolEvents: [],
-    redFlags: fallback.redFlags,
-    extractedFields: fallback.extractedFields,
-  };
 }
 
 function safeJsonParse(raw: string) {

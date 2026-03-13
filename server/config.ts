@@ -93,6 +93,18 @@ export function isElevenLabsConfigured() {
   return Boolean(config.elevenLabsApiKey && config.elevenLabsAgentId);
 }
 
+export function getTextAssistantConfigStatus() {
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY);
+  const hasOpenAi = Boolean(process.env.OPENAI_API_KEY);
+
+  return {
+    configured: hasGemini || hasOpenAi,
+    provider: hasGemini ? "gemini" : hasOpenAi ? "openai" : null,
+    geminiConfigured: hasGemini,
+    openAiConfigured: hasOpenAi,
+  };
+}
+
 export function getElevenLabsConfigStatus() {
   const missing: string[] = [];
   if (!config.elevenLabsApiKey) missing.push("ELEVENLABS_API_KEY");

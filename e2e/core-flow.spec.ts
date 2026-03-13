@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 
 test("demo user can use chat, review, payment, regenerate, and download through the UI", async ({ page }) => {
+  test.skip(
+    !process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY && !(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_AGENT_ID),
+    "Chat providers are not configured for this environment.",
+  );
+
   const openTextMode = async () => {
     const input = page.getByTestId("input-chat");
     await expect(input).toBeVisible();

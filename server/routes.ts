@@ -45,7 +45,7 @@ import { rateLimit } from "./security";
 import { requireAdmin, requireAuth, type AuthenticatedRequest, resolveRequestUser } from "./auth";
 import { verifyPassword, hashPassword } from "./password";
 import { documentJobs } from "./documentJobs";
-import { canUseLocalStorage, config, getElevenLabsConfigStatus, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
+import { canUseLocalStorage, config, getElevenLabsConfigStatus, getTextAssistantConfigStatus, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
 import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
 import { summarizeScope } from "./assistantCatalog";
@@ -249,6 +249,31 @@ async function getAuthedUserSession(userId: string, sessionId?: string) {
 
 function getAuthenticatedUserId(req: AuthenticatedRequest) {
   return req.authUser?.id ?? req.session.userId;
+}
+
+function buildChatAvailabilityMessage(options: {
+  voiceAvailable: boolean;
+  textAvailable: boolean;
+  requestedMode: "voice" | "text";
+}) {
+  const { voiceAvailable, textAvailable, requestedMode } = options;
+  if (requestedMode === "voice") {
+    if (!voiceAvailable && textAvailable) {
+      return "Voice chat is not configured right now. Text chat is still available.";
+    }
+    if (!voiceAvailable && !textAvailable) {
+      return "Voice and text chat are both unavailable right now.";
+    }
+    return "Voice chat is unavailable right now.";
+  }
+
+  if (!textAvailable && voiceAvailable) {
+    return "Text chat is not configured right now. Voice chat is still available.";
+  }
+  if (!textAvailable && !voiceAvailable) {
+    return "Voice and text chat are both unavailable right now.";
+  }
+  return "Text chat is unavailable right now.";
 }
 
 async function persistTranscriptMessageIfMissing(sessionId: string, message: ChatMessage) {
@@ -568,7 +593,13 @@ export async function registerRoutes(
       const session = await getAuthedUserSession(userId, body.formSessionId);
       const elevenLabsStatus = getElevenLabsConfigStatus();
       if (!elevenLabsStatus.configured) {
-        console.error("ElevenLabs session bootstrap failed:", elevenLabsStatus);
+        return res.status(503).json({
+          error: buildChatAvailabilityMessage({
+            voiceAvailable: false,
+            textAvailable: getTextAssistantConfigStatus().configured,
+            requestedMode: "voice",
+          }),
+        });
       }
       const latestAssistantPrompt = [...session.messages]
         .reverse()
@@ -865,6 +896,16 @@ export async function registerRoutes(
       const userId = getAuthenticatedUserId(req);
       if (!userId) return res.status(401).json({ error: "Not authenticated" });
       const body = chatRequestSchema.parse(req.body);
+      const textStatus = getTextAssistantConfigStatus();
+      if (!textStatus.configured) {
+        return res.status(503).json({
+          error: buildChatAvailabilityMessage({
+            voiceAvailable: getElevenLabsConfigStatus().configured,
+            textAvailable: false,
+            requestedMode: "text",
+          }),
+        });
+      }
       const session = await getAuthedUserSession(userId, body.formSessionId);
 
       const userMsg: ChatMessage = {
