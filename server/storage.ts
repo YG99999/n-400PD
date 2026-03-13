@@ -16,6 +16,10 @@ import { canUseLocalStorage, config, isSupabaseConfigured, isProduction } from "
 import { hashPassword } from "./password";
 import { getSupabaseAdminClient } from "./providers";
 
+function isUuidLike(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 export interface PaymentRecord {
   id: string;
   userId: string;
@@ -415,8 +419,9 @@ class SupabaseStorage implements IStorage {
       .eq("id", sessionId)
       .single();
     if (sessionError) throw sessionError;
+    const storageMessageId = isUuidLike(message.id) ? message.id : randomUUID();
     const { error } = await this.getDb().from("chat_messages").insert({
-      id: message.id,
+      id: storageMessageId,
       session_id: sessionId,
       user_id: session.user_id,
       role: message.role,

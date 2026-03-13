@@ -247,7 +247,17 @@ async function persistTranscriptMessageIfMissing(sessionId: string, message: Cha
     throw new Error("Session not found");
   }
 
-  const exists = session.messages.some((existing) => existing.id === message.id);
+  const exists = session.messages.some((existing) => {
+    if (existing.id === message.id) {
+      return true;
+    }
+
+    return (
+      existing.role === message.role &&
+      existing.content === message.content &&
+      existing.timestamp === message.timestamp
+    );
+  });
   if (!exists) {
     await storage.addMessage(sessionId, message);
   }
