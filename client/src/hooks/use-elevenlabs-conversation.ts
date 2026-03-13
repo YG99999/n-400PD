@@ -79,6 +79,37 @@ function createSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMo
   };
 }
 
+function createWebRtcSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMode) {
+  return {
+    conversationToken: bootstrap.conversationToken,
+    connectionType: "webrtc" as const,
+    textOnly: mode === "text",
+    serverLocation: bootstrap.serverLocation,
+    workletPaths: WORKLET_PATHS,
+    dynamicVariables: bootstrap.dynamicVariables,
+    overrides: {
+      agent: {
+        prompt: {
+          prompt: bootstrap.prompt,
+        },
+        firstMessage: bootstrap.firstMessage,
+      },
+      conversation: {
+        textOnly: mode === "text",
+      },
+      client: {
+        source: "citizenflow-web",
+        version: "1",
+      },
+    },
+  };
+}
+
+function isRecoverableTransportError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /socket error|websocket|connection closed|failed to fetch|networkerror/i.test(message);
+}
+
 function isRecoverableVoiceSetupError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return /worklet|audioworklet|audio capture|microphone|rawaudioprocessor|audioconcatprocessor|cannot set microp/i.test(
@@ -406,7 +437,20 @@ export function useElevenLabsConversation({
       }
 
       setMicMuted(mode === "text");
-      await conversation.startSession(createSessionOptions(bootstrap, mode));
+
+      try {
+        await conversation.startSession(createSessionOptions(bootstrap, mode));
+      } catch (transportError) {
+        if (
+          mode === "voice" &&
+          bootstrap.signedUrl &&
+          isRecoverableTransportError(transportError)
+        ) {
+          await conversation.startSession(createWebRtcSessionOptions(bootstrap, mode));
+        } else {
+          throw transportError;
+        }
+      }
     } catch (error) {
       if (mode === "voice" && isRecoverableVoiceSetupError(error)) {
         try {
