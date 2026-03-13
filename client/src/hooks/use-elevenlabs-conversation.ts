@@ -39,6 +39,39 @@ const WORKLET_PATHS = {
   audioConcatProcessor: "/elevenlabs/audioConcatProcessor.js",
 } as const;
 
+function createSessionOptions(bootstrap: BootstrapResponse, mode: ConversationMode) {
+  return {
+    conversationToken: bootstrap.conversationToken,
+    connectionType: "webrtc" as const,
+    textOnly: mode === "text",
+    serverLocation: bootstrap.serverLocation,
+    workletPaths: WORKLET_PATHS,
+    dynamicVariables: bootstrap.dynamicVariables,
+    overrides: {
+      agent: {
+        prompt: {
+          prompt: bootstrap.prompt,
+        },
+        firstMessage: bootstrap.firstMessage,
+      },
+      conversation: {
+        textOnly: mode === "text",
+      },
+      client: {
+        source: "citizenflow-web",
+        version: "1",
+      },
+    },
+  };
+}
+
+function isRecoverableVoiceSetupError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /worklet|audioworklet|audio capture|microphone|rawaudioprocessor|audioconcatprocessor|cannot set microp/i.test(
+    message,
+  );
+}
+
 function normalizeToolArguments(toolName: string, params: Record<string, unknown>) {
   if (toolName !== "update_form_fields") {
     return params;
@@ -325,82 +358,71 @@ export function useElevenLabsConversation({
     setError(null);
     cancelCountdown();
 
-    if (conversation.status === "connected") {
-      if (mode === "text") {
-        setMicMuted(true);
-        setAgentStatus("ready");
-        onSwitchToText?.();
-      } else {
-        setMicMuted(false);
-        setAgentStatus("listening");
-      }
-      startedSessionModeRef.current = mode;
-      return;
-    }
-
-    const bootstrap = await fetchBootstrap(mode);
-    startedSessionModeRef.current = mode;
-
-    if (mode === "voice") {
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        setPreferredMode("text");
-        startedSessionModeRef.current = "text";
-        onSwitchToText?.();
-        await conversation.startSession({
-          conversationToken: bootstrap.conversationToken,
-          connectionType: "webrtc",
-          textOnly: true,
-          serverLocation: bootstrap.serverLocation,
-          workletPaths: WORKLET_PATHS,
-          dynamicVariables: bootstrap.dynamicVariables,
-          overrides: {
-            agent: {
-              prompt: {
-                prompt: bootstrap.prompt,
-              },
-              firstMessage: bootstrap.firstMessage,
-            },
-            conversation: {
-              textOnly: true,
-            },
-            client: {
-              source: "citizenflow-web",
-              version: "1",
-            },
-          },
-        });
-        setMicMuted(true);
-        setAgentStatus("ready");
+    try {
+      if (conversation.status === "connected") {
+        if (mode === "text") {
+          setMicMuted(true);
+          setAgentStatus("ready");
+          onSwitchToText?.();
+        } else {
+          setMicMuted(false);
+          setAgentStatus("listening");
+        }
+        startedSessionModeRef.current = mode;
         return;
       }
-    }
 
-    setMicMuted(mode === "text");
-    await conversation.startSession({
-      conversationToken: bootstrap.conversationToken,
-      connectionType: "webrtc",
-      textOnly: mode === "text",
-      serverLocation: bootstrap.serverLocation,
-      workletPaths: WORKLET_PATHS,
-      dynamicVariables: bootstrap.dynamicVariables,
-      overrides: {
-        agent: {
-          prompt: {
-            prompt: bootstrap.prompt,
-          },
-          firstMessage: bootstrap.firstMessage,
-        },
-        conversation: {
-          textOnly: mode === "text",
-        },
-        client: {
-          source: "citizenflow-web",
-          version: "1",
-        },
-      },
-    });
+      const bootstrap = await fetchBootstrap(mode);
+      startedSessionModeRef.current = mode;
+
+      if (mode === "voice") {
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch {
+          const textBootstrap = await fetchBootstrap("text");
+          setPreferredMode("text");
+          startedSessionModeRef.current = "text";
+          onSwitchToText?.();
+          await conversation.startSession(createSessionOptions(textBootstrap, "text"));
+          setMicMuted(true);
+          setAgentStatus("ready");
+          setError("Microphone access was unavailable, so the conversation switched to text mode.");
+          return;
+        }
+      }
+
+      setMicMuted(mode === "text");
+      await conversation.startSession(createSessionOptions(bootstrap, mode));
+    } catch (error) {
+      if (mode === "voice" && isRecoverableVoiceSetupError(error)) {
+        try {
+          await conversation.endSession();
+        } catch {
+          // Ignore cleanup errors and continue to text fallback.
+        }
+
+        try {
+          const textBootstrap = await fetchBootstrap("text");
+          setPreferredMode("text");
+          startedSessionModeRef.current = "text";
+          onSwitchToText?.();
+          setMicMuted(true);
+          await conversation.startSession(createSessionOptions(textBootstrap, "text"));
+          setAgentStatus("ready");
+          setError("Voice setup hit a browser audio issue, so the conversation switched to text mode.");
+          return;
+        } catch (fallbackError) {
+          const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+          setError(`Voice and text fallback both failed: ${fallbackMessage}`);
+          setAgentStatus("error");
+          return;
+        }
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message);
+      setAgentStatus("error");
+    }
   }, [cancelCountdown, conversation, fetchBootstrap, formSessionId, onSwitchToText]);
 
   const sendMessage = useCallback(async () => {

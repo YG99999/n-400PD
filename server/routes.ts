@@ -54,6 +54,11 @@ const OUTPUT_DIR = path.resolve("generated_pdfs");
 const PDF_DIR = path.resolve(import.meta.dirname, "pdf");
 const ACROFORM_PATH = path.join(PDF_DIR, "n400_acroform.pdf");
 const POPULATOR_PATH = path.join(PDF_DIR, "n400_populator.py");
+const ELEVENLABS_WORKLETS_DIR = path.resolve(import.meta.dirname, "public", "elevenlabs");
+const ELEVENLABS_WORKLET_FILES = [
+  "rawAudioProcessor.js",
+  "audioConcatProcessor.js",
+] as const;
 
 type ReadinessCheck = {
   ok: boolean;
@@ -116,6 +121,10 @@ async function buildReadinessPayload() {
       detail: getElevenLabsConfigStatus().configured
         ? `Agent ${config.elevenLabsAgentId} configured for ${config.elevenLabsServerLocation}.`
         : `Missing ${getElevenLabsConfigStatus().missing.join(", ")} on the web service.`,
+    },
+    elevenLabsWorkletsPresent: {
+      ok: ELEVENLABS_WORKLET_FILES.every((file) => fs.existsSync(path.join(ELEVENLABS_WORKLETS_DIR, file))),
+      detail: `Checks ${ELEVENLABS_WORKLET_FILES.join(", ")} in the deployed public/elevenlabs bundle.`,
     },
     localStorageAllowed: {
       ok: canUseLocalStorage(),

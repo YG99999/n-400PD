@@ -28,8 +28,9 @@ export function setupSecurity(app: Express) {
         "default-src 'self'",
         "img-src 'self' data: https:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "script-src 'self' 'unsafe-inline'",
-        "font-src 'self' https://fonts.gstatic.com",
+        "script-src 'self' 'unsafe-inline' blob: data:",
+        "worker-src 'self' blob:",
+        "font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai",
         "connect-src 'self' https://api.openai.com https://*.supabase.co https://api.stripe.com https://api.elevenlabs.io https://livekit.rtc.elevenlabs.io wss://api.elevenlabs.io wss://livekit.rtc.elevenlabs.io",
       ].join("; ") + ";",
     );
