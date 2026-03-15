@@ -1,10 +1,13 @@
 import { Link, useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { isSupabaseAuthEnabled } from "@/lib/supabase";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   MessageSquare,
   FileCheck,
@@ -16,18 +19,47 @@ import {
   Moon,
   Mic,
   AlertTriangle,
+  FlaskConical,
 } from "lucide-react";
 import { PerplexityAttribution } from "@/components/PerplexityAttribution";
 
 export default function LandingPage() {
   const { loginDemo, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
   const [, navigate] = useLocation();
+  const testFlowBypassEnabled = import.meta.env.VITE_ENABLE_FULL_FLOW_BYPASS === "true";
 
   const handleDemo = async () => {
     await loginDemo();
     navigate("/chat");
   };
+
+  const bypassMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/testing/full-flow-bypass");
+      return response.json();
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/form/load"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/form/readiness"] }),
+      ]);
+      toast({
+        title: "Test flow loaded",
+        description: "Mock intake, payment, and PDF generation are ready to verify.",
+      });
+      navigate("/payment");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start test flow",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -79,10 +111,38 @@ export default function LandingPage() {
                 Try Demo
               </Button>
             ) : null}
+            {testFlowBypassEnabled ? (
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-8 text-base"
+                onClick={() => {
+                  if (!user) {
+                    navigate("/login");
+                    return;
+                  }
+                  bypassMutation.mutate();
+                }}
+                disabled={bypassMutation.isPending}
+                data-testid="button-run-full-flow-bypass"
+              >
+                <FlaskConical className="mr-2 h-4 w-4" />
+                {bypassMutation.isPending
+                  ? "Preparing full-flow test..."
+                  : user
+                    ? "Run full-flow test"
+                    : "Sign in for full-flow test"}
+              </Button>
+            ) : null}
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             No credit card required to begin. Pay only when you are ready to generate your PDF.
           </p>
+          {testFlowBypassEnabled ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Test bypass is enabled for this environment only and seeds a mock completed session for verification.
+            </p>
+          ) : null}
         </div>
       </section>
 

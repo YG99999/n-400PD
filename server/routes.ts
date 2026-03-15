@@ -45,7 +45,7 @@ import { rateLimit } from "./security";
 import { requireAdmin, requireAuth, type AuthenticatedRequest, resolveRequestUser } from "./auth";
 import { verifyPassword, hashPassword } from "./password";
 import { documentJobs } from "./documentJobs";
-import { canUseLocalStorage, config, getElevenLabsConfigStatus, getTextAssistantConfigStatus, isProduction, isStripeConfigured, isSupabaseConfigured } from "./config";
+import { canUseLocalStorage, config, getElevenLabsConfigStatus, getTextAssistantConfigStatus, isProduction, isStripeConfigured, isSupabaseConfigured, isTestFlowBypassEnabled } from "./config";
 import { getStripeClient, getSupabaseAdminClient } from "./providers";
 import { readGeneratedDocument } from "./documentStorage";
 import { summarizeScope } from "./assistantCatalog";
@@ -284,6 +284,134 @@ function buildChatAvailabilityMessage(options: {
   return "Text chat is unavailable right now.";
 }
 
+function createFullFlowBypassFormData(): N400FormData {
+  return {
+    personalInfo: {
+      fullName: "Jordan Rivera",
+      firstName: "Jordan",
+      lastName: "Rivera",
+      middleName: "Lee",
+      dateOfBirth: "04/12/1990",
+      aNumber: "A123456789",
+      uscisElisNumber: "123456789",
+      dateBecamePR: "08/15/2018",
+      countryOfBirth: "Mexico",
+      nationality: "Mexico",
+      gender: "Male",
+      ssn: "123-45-6789",
+      email: "jordan.rivera@example.com",
+      phone: "415-555-0102",
+      mobilePhone: "415-555-0102",
+      eligibilityBasis: "five_year_lpr",
+    },
+    biographic: {
+      ethnicity: "Hispanic",
+      race: "White",
+      heightFeet: 5,
+      heightInches: 10,
+      weightLbs: 178,
+      eyeColor: "BRO",
+      hairColor: "BLK",
+    },
+    residenceHistory: [
+      {
+        address: "1450 Mission Street Apt 9",
+        city: "San Francisco",
+        state: "CA",
+        zip: "94103",
+        country: "USA",
+        moveInDate: "06/01/2021",
+      },
+      {
+        address: "88 Harbor Drive",
+        city: "Oakland",
+        state: "CA",
+        zip: "94607",
+        country: "USA",
+        moveInDate: "01/10/2019",
+        moveOutDate: "05/30/2021",
+      },
+    ],
+    mailingAddress: {
+      address: "1450 Mission Street Apt 9",
+      city: "San Francisco",
+      state: "CA",
+      zip: "94103",
+      country: "USA",
+    },
+    family: {
+      maritalStatus: "Single",
+      timesMarried: 0,
+      totalChildren: 0,
+      householdSize: 1,
+      householdIncomeEarners: 1,
+      totalHouseholdIncome: 72000,
+      feeReductionRequested: false,
+      children: [],
+    },
+    employment: [
+      {
+        employerName: "Cityside Health",
+        occupation: "Operations Coordinator",
+        city: "San Francisco",
+        state: "CA",
+        zip: "94107",
+        country: "USA",
+        startDate: "03/01/2022",
+      },
+      {
+        employerName: "North Bay Market",
+        occupation: "Shift Lead",
+        city: "Oakland",
+        state: "CA",
+        zip: "94607",
+        country: "USA",
+        startDate: "02/01/2019",
+        endDate: "02/15/2022",
+      },
+    ],
+    travelHistory: [
+      {
+        destination: "Mexico",
+        departureDate: "05/10/2023",
+        returnDate: "05/21/2023",
+      },
+      {
+        destination: "Canada",
+        departureDate: "09/02/2022",
+        returnDate: "09/09/2022",
+      },
+    ],
+    moralCharacter: {
+      claimedUSCitizen: false,
+      votedInElection: false,
+      alwaysFiledTaxes: true,
+      owedUnpaidTaxes: false,
+      arrestedOrDetained: false,
+      convictedOfCrime: false,
+      usedIllegalDrugs: false,
+      habitualDrunkard: false,
+      helpedIllegalEntry: false,
+      liedToGovernment: false,
+      deported: false,
+      memberOfOrganizations: false,
+      communistPartyMember: false,
+      terroristAssociation: false,
+      committedViolence: false,
+      militaryService: false,
+      registeredSelectiveService: true,
+    },
+    oath: {
+      supportConstitution: true,
+      willingTakeOath: true,
+      willingBearArms: true,
+      willingNoncombatService: true,
+      willingNationalService: true,
+    },
+    additionalInfo: [],
+  };
+}
+
 async function persistTranscriptMessageIfMissing(sessionId: string, message: ChatMessage) {
   const session = await storage.getSession(sessionId);
   if (!session) {
@@ -511,6 +639,97 @@ export async function registerRoutes(
       user: sanitizeUser(user),
       formSessionId: formSession?.id ?? null,
     });
+  });
+
+  app.post("/api/testing/full-flow-bypass", requireAuth, async (req, res) => {
+    if (!isTestFlowBypassEnabled()) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    try {
+      const userId = getAuthenticatedUserId(req);
+      if (!userId) return res.status(401).json({ error: "Not authenticated" });
+
+      const session = await getAuthedUserSession(userId);
+      const bypassFormData = createFullFlowBypassFormData();
+      const bypassMessage: ChatMessage = {
+        id: randomUUID(),
+        role: "assistant",
+        content: "Test flow bypass loaded. Review, payment, and PDF generation are ready for verification.",
+        timestamp: new Date().toISOString(),
+        section: "REVIEW",
+        modality: "text",
+        transcriptKind: "assistant",
+      };
+
+      const nextWorkflowState = refreshWorkflowState({
+        ...session,
+        formData: bypassFormData,
+        paymentStatus: "completed",
+        currentSection: "REVIEW",
+        workflowState: {
+          ...session.workflowState,
+          mode: "post_payment_review",
+          currentContext: "post_payment_edits",
+          pendingRedirect: null,
+          readyForReview: true,
+          pdfNeedsRegeneration: false,
+          chatSession: {
+            ...session.workflowState.chatSession,
+            flowState: "stopped",
+            resumable: true,
+            pendingHandoffTarget: null,
+            currentPrompt: bypassMessage.content,
+            awaitingUserResponse: false,
+            liveConnectionState: "saved",
+            lastMeaningfulAssistantMessage: bypassMessage.content,
+          },
+        },
+        pdfUrl: undefined,
+      });
+
+      await storage.updateSession(session.id, {
+        formData: bypassFormData,
+        currentSection: "REVIEW",
+        status: "payment_pending",
+        paymentStatus: "completed",
+        pdfUrl: undefined,
+        redFlags: [],
+        workflowState: nextWorkflowState,
+      });
+      await storage.updateFormData(session.id, bypassFormData);
+      await storage.setRedFlags(session.id, []);
+      await storage.addMessage(session.id, bypassMessage);
+
+      const payment = await storage.createPayment({
+        userId,
+        sessionId: session.id,
+        amountCents: config.paymentAmountCents,
+        status: "completed",
+        provider: "mock",
+        providerReference: `bypass_${randomUUID().slice(0, 8)}`,
+        receiptEmail: bypassFormData.personalInfo.email,
+      });
+
+      const queued = await documentJobs.enqueue(session.id, "payment");
+      await storage.createAuditEvent({
+        userId,
+        action: "testing.full_flow_bypass",
+        targetType: "session",
+        targetId: session.id,
+        metadata: { paymentId: payment.id, jobId: queued.jobId },
+      });
+
+      return res.status(202).json({
+        success: true,
+        formSessionId: session.id,
+        paymentId: payment.id,
+        jobId: queued.jobId,
+        redirectTo: "/payment",
+      });
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
   });
 
   app.get("/api/account", requireAuth, async (req, res) => {
