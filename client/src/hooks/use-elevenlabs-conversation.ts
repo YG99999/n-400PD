@@ -30,13 +30,6 @@ interface BootstrapResponse {
   debug?: ElevenLabsSessionDebug;
 }
 
-interface TextChatResponse {
-  botResponse: string;
-  currentSection: Section;
-  userMessage?: ChatMessage;
-  assistantMessage?: ChatMessage;
-}
-
 type TranscriptKind = NonNullable<ChatMessage["transcriptKind"]>;
 
 type ChatUiState =
@@ -77,6 +70,36 @@ const WORKLET_PATHS = {
 
 function normalizeTranscriptContent(content: string) {
   return content.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function extractTentativeUserTranscript(
+  payload: unknown,
+): { content: string; eventId?: number } | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const debugEvent = payload as {
+    type?: string;
+    tentative_user_transcription_event?: {
+      user_transcript?: string;
+      event_id?: number;
+    };
+  };
+
+  if (debugEvent.type !== "tentative_user_transcript") {
+    return null;
+  }
+
+  const content = debugEvent.tentative_user_transcription_event?.user_transcript?.trim();
+  if (!content) {
+    return null;
+  }
+
+  return {
+    content,
+    eventId: debugEvent.tentative_user_transcription_event?.event_id,
+  };
 }
 
 function createTranscriptKey(message: Pick<ChatMessage, "id" | "role" | "content" | "eventId" | "conversationId">) {
@@ -247,8 +270,9 @@ export function useElevenLabsConversation({
   const suppressDisconnectRef = useRef(false);
   const seenTranscriptKeysRef = useRef(new Set<string>(initialMessages.map((message) => createTranscriptKey(message))));
   const pendingTypedMessageRef = useRef<{ id: string; content: string } | null>(null);
+  const pendingVoiceTranscriptRef = useRef<{ content: string; eventId?: number } | null>(null);
   const sessionMessageCountsRef = useRef({ assistant: 0, user: 0 });
-  const textFallbackRef = useRef(false);
+  const sessionCapabilityRef = useRef<"voice" | "text_only" | null>(null);
   const formSessionIdRef = useRef(formSessionId);
   const currentSectionRef = useRef(currentSection);
   const onSwitchToTextRef = useRef(onSwitchToText);
@@ -307,10 +331,11 @@ export function useElevenLabsConversation({
     } finally {
       conversationIdRef.current = undefined;
       pendingTypedMessageRef.current = null;
+      pendingVoiceTranscriptRef.current = null;
       sessionMessageCountsRef.current = { assistant: 0, user: 0 };
       setMicMuted(false);
       setAgentStatus("idle");
-      textFallbackRef.current = false;
+      sessionCapabilityRef.current = null;
       window.setTimeout(() => {
         suppressDisconnectRef.current = false;
       }, 0);
@@ -365,6 +390,36 @@ export function useElevenLabsConversation({
       transcriptKind: "text_user",
     };
     await appendTranscriptMessage(message);
+  }, [appendTranscriptMessage]);
+
+  const commitPendingVoiceTranscript = useCallback(async (reason: "assistant_reply" | "disconnect" | "switch_mode") => {
+    const pending = pendingVoiceTranscriptRef.current;
+    if (!pending?.content.trim()) {
+      return;
+    }
+
+    pendingVoiceTranscriptRef.current = null;
+
+    const chatMessage: ChatMessage = {
+      id: typeof pending.eventId === "number"
+        ? `${conversationIdRef.current || "conversation"}:user:${pending.eventId}`
+        : `voice:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      role: "user",
+      content: pending.content.trim(),
+      timestamp: new Date().toISOString(),
+      section: currentSectionRef.current,
+      modality: "voice",
+      conversationId: conversationIdRef.current,
+      eventId: pending.eventId,
+      transcriptKind: "voice_user",
+    };
+
+    logConversationEvent(correlationIdRef.current, "voice_transcript_committed", {
+      reason,
+      eventId: pending.eventId,
+    });
+
+    await appendTranscriptMessage(chatMessage);
   }, [appendTranscriptMessage]);
 
   const fetchBootstrap = useCallback(async (mode: ConversationMode) => {
@@ -506,6 +561,7 @@ export function useElevenLabsConversation({
       conversationIdRef.current = conversationId;
       sessionMessageCountsRef.current = { assistant: 0, user: 0 };
       const mode = connectModeRef.current;
+      sessionCapabilityRef.current = mode === "voice" ? "voice" : "text_only";
       applyUiState(mode === "voice" ? "active_voice" : "active_text");
       setAgentStatus(mode === "voice" ? "listening" : "ready");
       setError(null);
@@ -523,6 +579,9 @@ export function useElevenLabsConversation({
     },
     onDisconnect: (details) => {
       logConversationEvent(correlationIdRef.current, "disconnected", details);
+      if (pendingVoiceTranscriptRef.current) {
+        void commitPendingVoiceTranscript("disconnect");
+      }
       conversationIdRef.current = undefined;
       setAgentStatus("idle");
       setMicMuted(false);
@@ -551,6 +610,10 @@ export function useElevenLabsConversation({
     },
     onDebug: (info) => {
       logConversationEvent(correlationIdRef.current, "debug", info);
+      const tentativeTranscript = extractTentativeUserTranscript(info);
+      if (tentativeTranscript && connectModeRef.current === "voice") {
+        pendingVoiceTranscriptRef.current = tentativeTranscript;
+      }
     },
     onModeChange: ({ mode }) => {
       if (connectModeRef.current === "text" || preferredMode === "text") {
@@ -595,8 +658,9 @@ export function useElevenLabsConversation({
     onConversationMetadata: (metadata) => {
       logConversationEvent(correlationIdRef.current, "conversation_metadata", metadata);
     },
-    onMessage: ({ message, role, event_id }) => {
+    onMessage: async ({ message, role, event_id }) => {
       const currentMode = connectModeRef.current;
+      const displayMode: ConversationMode = uiStateRef.current === "active_text" ? "text" : currentMode;
       const mappedRole = mapIncomingRole(role);
       const transcriptKind: TranscriptKind =
         mappedRole === "assistant"
@@ -614,6 +678,14 @@ export function useElevenLabsConversation({
         return;
       }
 
+      if (mappedRole === "user") {
+        pendingVoiceTranscriptRef.current = null;
+      }
+
+      if (mappedRole === "assistant" && currentMode === "voice" && pendingVoiceTranscriptRef.current) {
+        await commitPendingVoiceTranscript("assistant_reply");
+      }
+
       const chatMessage: ChatMessage = {
         id: typeof event_id === "number"
           ? `${conversationIdRef.current || "conversation"}:${role}:${event_id}`
@@ -622,12 +694,12 @@ export function useElevenLabsConversation({
         content: message,
         timestamp: new Date().toISOString(),
         section: currentSectionRef.current,
-        modality: currentMode,
+        modality: displayMode,
         conversationId: conversationIdRef.current,
         eventId: event_id,
         transcriptKind,
       };
-      void appendTranscriptMessage(chatMessage);
+      await appendTranscriptMessage(chatMessage);
     },
   });
 
@@ -643,7 +715,45 @@ export function useElevenLabsConversation({
       return;
     }
 
+    if (mode === "text" && isConnectedVoice && sessionCapabilityRef.current === "voice") {
+      connectModeRef.current = "voice";
+      setPreferredMode("text");
+      setMicMuted(true);
+      conversation.setVolume({ volume: 0 });
+      setAgentStatus("ready");
+      applyUiState("active_text");
+      await persistChatState({
+        flowState: "active",
+        resumable: true,
+        lastUsedMode: "text",
+        lastTransportError: null,
+        liveConnectionState: "saved",
+      });
+      onSwitchToTextRef.current?.();
+      return;
+    }
+
+    if (mode === "voice" && isConnectedText && sessionCapabilityRef.current === "voice") {
+      connectModeRef.current = "voice";
+      setPreferredMode("voice");
+      setMicMuted(false);
+      conversation.setVolume({ volume: 1 });
+      setAgentStatus("listening");
+      applyUiState("active_voice");
+      await persistChatState({
+        flowState: "active",
+        resumable: true,
+        lastUsedMode: "voice",
+        lastTransportError: null,
+        liveConnectionState: "listening",
+      });
+      return;
+    }
+
     if ((isConnectedVoice && mode === "text") || (isConnectedText && mode === "voice")) {
+      if (mode === "text" && pendingVoiceTranscriptRef.current) {
+        await commitPendingVoiceTranscript("switch_mode");
+      }
       applyUiState(mode === "voice" ? "switching_voice" : "switching_text");
       await persistChatState({
         flowState: "active",
@@ -661,22 +771,6 @@ export function useElevenLabsConversation({
     setNormalizedError(null);
 
     try {
-      if (mode === "text") {
-        textFallbackRef.current = true;
-        setMicMuted(true);
-        setAgentStatus("ready");
-        applyUiState("active_text");
-        await persistChatState({
-          flowState: "active",
-          resumable: true,
-          lastUsedMode: "text",
-          lastTransportError: null,
-          liveConnectionState: "saved",
-        });
-        onSwitchToTextRef.current?.();
-        return;
-      }
-
       applyUiState(mode === "voice" ? "starting_voice" : "starting_text");
       await persistChatState({
         flowState: "active",
@@ -704,9 +798,11 @@ export function useElevenLabsConversation({
         }
       }
 
-      setMicMuted(false);
+      setMicMuted(mode === "text");
       await conversation.startSession(buildSessionOptions(bootstrap, mode));
-      textFallbackRef.current = false;
+      if (mode === "text") {
+        onSwitchToTextRef.current?.();
+      }
     } catch (startError) {
       await safelyEndConversation();
       const normalized = normalizeError(startError, "transport_connect");
@@ -715,7 +811,7 @@ export function useElevenLabsConversation({
     } finally {
       isStartingRef.current = false;
     }
-  }, [applyUiState, conversation, fetchBootstrap, persistChatState, safelyEndConversation, setRecoverableErrorState]);
+  }, [applyUiState, commitPendingVoiceTranscript, conversation, fetchBootstrap, persistChatState, safelyEndConversation, setRecoverableErrorState]);
 
   const sendMessage = useCallback(async () => {
     const value = composerValue.trim();
@@ -739,36 +835,6 @@ export function useElevenLabsConversation({
     }
 
     try {
-      if (preferredMode === "text" || textFallbackRef.current || !conversationIdRef.current) {
-        setAgentStatus("thinking");
-        const response = await apiRequest("POST", "/api/chat", {
-          formSessionId: formSessionIdRef.current,
-          message: value,
-        });
-        if (!response.ok) {
-          throw new Error("Unable to send message.");
-        }
-        const body = await response.json() as TextChatResponse;
-        setComposerValue("");
-        if (body.userMessage) {
-          setTranscript((existing) => sortTranscript([...existing, body.userMessage!]));
-          seenTranscriptKeysRef.current.add(createTranscriptKey(body.userMessage));
-        }
-        if (body.assistantMessage) {
-          setTranscript((existing) => sortTranscript([...existing, body.assistantMessage!]));
-          seenTranscriptKeysRef.current.add(createTranscriptKey(body.assistantMessage));
-        }
-        await onSessionSyncRef.current?.();
-        setAgentStatus("ready");
-        await persistChatState({
-          flowState: "active",
-          resumable: true,
-          lastUsedMode: "text",
-          liveConnectionState: "saved",
-        });
-        return;
-      }
-
       await appendOptimisticTypedMessage(value);
       conversation.sendUserMessage(value);
       setComposerValue("");
