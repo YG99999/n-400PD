@@ -680,6 +680,9 @@ export function useElevenLabsConversation({
 
       if (mappedRole === "user") {
         pendingVoiceTranscriptRef.current = null;
+        if (currentMode === "voice" && preferredMode === "voice") {
+          setAgentStatus("thinking");
+        }
       }
 
       if (mappedRole === "assistant" && currentMode === "voice" && pendingVoiceTranscriptRef.current) {
